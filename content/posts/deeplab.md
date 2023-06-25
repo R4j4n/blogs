@@ -2,7 +2,7 @@
 author = "Rajan Ghimire"
 title = "Semantic Segmentation from scratch in PyTorch."
 date = "2023-03-06"
-description = "Implementing sematic segmentation from scratch."
+description = "Your custom background remover and background blur from scratch."
 tags = [
     "Computer Vison",
     "PyTorch",
@@ -10,14 +10,10 @@ tags = [
 ]
 
 +++
-cover:
-  image: "https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png"
-  # Manish dai 
-  # ex. https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png
-  alt: "<alt text>"
-  caption: "<text>"
-  relative: false # To use relative path for cover image, used in hugo Page-bundles
+In this blog we are going to use DeepLabv3+ architecture to build our person segmentation pipeline entirely from scratch.
+![What We are going to build.](/blogs/img/deeplab/overall.png)
 
+## ****DeepLabv3+ Architecture:****
   
 The DeepLabv3 paper was introduced in **“Rethinking Atrous Convolution for Semantic Image Segmentation”**. After DeepLabv1 and DeepLabv2 are invented, authors tried to RETHINK or restructure the DeepLab architecture and finally come up with a more enhanced DeepLabv3. 
 
@@ -599,6 +595,7 @@ Entire training process can be found here:
 
 ```python
 from models.deeplabv3plus import Deeplabv3Plus
+import os
 import torch
 import torchvision
 import cv2
@@ -609,7 +606,9 @@ from albumentations.pytorch import ToTensorV2
 from torch.utils.data import Dataset, DataLoader
 from models.deeplabv3plus import Deeplabv3Plus
 from copy import deepcopy
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:0"
+import warnings
+warnings.filterwarnings("ignore")
 
 def resize_with_aspect_ratio(
     image, width=None, height=None, inter=cv2.INTER_AREA
@@ -627,6 +626,7 @@ def resize_with_aspect_ratio(
         dim = (width, int(h * r))
 
     return cv2.resize(image, dim, interpolation=inter)
+
 
 class ImageDataset(Dataset):
 
@@ -646,6 +646,11 @@ class ImageDataset(Dataset):
             augemantations = self.transform(image=image)
             image = augemantations['image']
         return image
+```
+
+
+```python
+from typing import Union, Literal
 
 class SegmentBackground():
 
@@ -679,6 +684,8 @@ class SegmentBackground():
                                      Image.ANTIALIAS)
 
         mapping_resized = mapping_resized.astype("uint8")
+        mapping_resized = cv2.GaussianBlur(mapping_resized, (0,0), sigmaX=3, sigmaY=3, borderType = cv2.BORDER_DEFAULT)
+        
 
         blurred = cv2.GaussianBlur(mapping_resized, (15, 15), sigmaX=0)
         _, thresholded_img = cv2.threshold(
@@ -686,47 +693,153 @@ class SegmentBackground():
         mapping = cv2.cvtColor(thresholded_img, cv2.COLOR_GRAY2RGB)
 
         blurred_original_image = cv2.GaussianBlur(orig_imginal,
-                                                  (101, 101), 0)
+                                                  (151, 151), 0)
         layered_image = np.where(mapping != (0, 0, 0),
                                  orig_imginal,
                                  blurred_original_image)
 
-        cv2.imwrite("model_prediction/blurred.jpg" , resize_with_aspect_ratio(layered_image , 800))
-        print("Done!")
+        return layered_image
+        
+        
+    def remove(self,image:np.ndarray, mask: np.ndarray) -> np.ndarray:
 
-    def segement(self, image_paths):
+        mask = mask[0].cpu().numpy().transpose(1, 2, 0)
+        new_mapp = deepcopy(mask)
+        new_mapp[mask == 0.0] = 0
+        new_mapp[mask == 1.0] = 255
+        
+        orig_imginal = np.array(image)
+        mapping_resized = cv2.resize(new_mapp,
+                                     (orig_imginal.shape[1],
+                                      orig_imginal.shape[0]),
+                                     Image.ANTIALIAS)
 
-        images_list = [cv2.imread(x) for x in image_paths]
-        images = ImageDataset(images_list,
-                              transform=self.transforms_)
+        mapping_resized = mapping_resized.astype("uint8")
+        
+        # mapping_resized = cv2.GaussianBlur(mapping_resized, (0,0), sigmaX=5, sigmaY=5, borderType = cv2.BORDER_DEFAULT)
+
+        kernel = np.ones((5, 5), np.uint8)
+        mapping_resized = cv2.erode(mapping_resized, kernel, iterations=1)
+
+        print(f"Mapping Resized: {mapping_resized.shape}")
+        # Extract the object using the mask
+        masked_object = cv2.bitwise_and(image, image, mask=mapping_resized)
+        
+        background = np.where(mapping_resized==0,255,0).astype(np.uint8)
+        
+        finalimage = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)+masked_object
+        
+        return finalimage
+    
+    
+    def segement(self, image:np.ndarray, operation_type:Literal["blur","remove"] )-> np.ndarray:
+        """_summary_
+
+        Args:
+            images_list (_type_): _description_
+        """
+
+        images = ImageDataset([image],
+                                transform=self.transforms_)   
+                     
         loader = torch.utils.data.DataLoader(
             images, batch_size=1, num_workers=1)
 
         self.model.eval()
-        folder = "model_prediction/"
-        generated_mask = []
-        for idx, img in enumerate(loader):
-            x = img.to(device=DEVICE)
+
+        for img in loader:
+            img = img.to(device=DEVICE)
             with torch.no_grad():
-                preds = torch.sigmoid(self.model(x))
-                preds = (preds > 0.5).float()
-                generated_mask.append(preds)
-            torchvision.utils.save_image(
-                preds, f"{folder}/pred_{idx}.png"
-            )
+                preds = torch.sigmoid(self.model(img))
+                mask = (preds > 0.5).float()
+        
+        print(f"Shape of mask",mask.shape)
+        if operation_type == "blur":
+            return self.blur_backgrond(image, mask)
 
-        for img, mask in zip(images_list, generated_mask):
-            self.blur_backgrond(img, mask)
+                
+        elif operation_type =="remove":
 
-if __name__ == "__main__":
-    image_path = "inference/test_images/lachlan-dempsey-6VPEOdpFNAs-unsplash.jpg"
-    # img = cv2.imread(image_path)
-    segmenter = SegmentBackground("resize.pth.tar")
-    segmenter.segement([image_path])
+            return self.remove(image,mask)
+        
+
+        
+        else:
+            raise ValueError("Invalid operation_type. It must be either 'blur' or 'remove'.")
+                
+                
 ```
 
-## Output:
 
-![image](https://i.imgur.com/c5Eqxe3.jpeg)
+```python
+import cv2
+from PIL import Image
+from IPython.display import display
+def display_cv2(img):
 
-![girl (1).jpg](https://i.imgur.com/2NGmwWc.jpeg)
+    # Convert the image from BGR to RGB (OpenCV uses BGR, but PIL uses RGB)
+    image_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # Convert the OpenCV image to a PIL image
+    pil_image = Image.fromarray(image_rgb)
+
+    # Display the image using IPython.display
+    display(pil_image)
+```
+
+
+```python
+
+segmenter = SegmentBackground("resize.pth.tar")
+
+```
+
+
+```python
+test_pth = "pexels_test_2.jpg"
+
+img = cv2.imread(test_pth)
+img = resize_with_aspect_ratio(img,720)
+
+
+```
+
+
+```python
+segmented = segmenter.segement(img,operation_type="remove")
+```
+
+    Shape of mask torch.Size([1, 1, 640, 640])
+    Mapping Resized: (728, 720)
+
+
+
+```python
+display_cv2(segmented)
+```
+
+
+    
+![png](/blogs/img/deeplab//inference_6_0.png)
+    
+
+
+
+```python
+blurred = segmenter.segement(img,operation_type="blur")
+```
+
+    Shape of mask torch.Size([1, 1, 640, 640])
+
+
+
+```python
+display_cv2(blurred)
+```
+
+
+    
+![png](/blogs/img/deeplab/inference_8_0.png)
+    
+
+

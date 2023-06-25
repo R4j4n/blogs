@@ -169,7 +169,7 @@ X2 = torch.randn(n, d_in).to(device)
 y2 = torch.matmul(X2, thetas2).to(device)
 ```
 
-As we know this data is from a different distribution, if we apply this data to our base model we wont get good performance.
+As we know this data is from a different distribution, if we apply this data to our base model we wont get good result.
 
 
 ```python
