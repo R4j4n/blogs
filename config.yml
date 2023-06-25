@@ -1,0 +1,24 @@
+baseURL: "https://R4j4n.github.io/blogs/"
+languageCode: en-us
+title: Rajan Ghimire
+theme: PaperMod
+
+menu:
+  main:
+  - identifier: posts
+    name: Blog
+    url: /
+    weight: 20
+  - identifier: about
+    name: About
+    url: /about/
+    weight: 30
+
+Params:
+    ShowReadingTime: true
+    ShowToc: true
+    ShowBreadCrumbs: true
+    ShowPostNavLinks: true
+    ShowCodeCopyButtons: true
+    math: true
+
