@@ -289,4 +289,5 @@ print(f"Loss on different distribution: {loss}")
     Loss on different distribution: 0.3048411011695862
 
 
-
+## Conclusion
+To sum it all up: LoRA has two major applications. The first is to finetune large models with low compute, and the second is to adapt large models in a low-data regime.Transformer models are predominantly a smart arrangement of matrix multiplication operations. By applying LoRA exclusively to these layers, the cost of fine-tuning is significantly decreased, yet high performance is still achieved. The experiments detailing this can be found in the LoRA paper.
