@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Semantic Segmentation from scratch in PyTorch. | Rajan Ghimire</title>
+<meta name="keywords" content="Computer Vison, PyTorch">
+<meta name="description" content="Implementing sematic segmentation from scratch.">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/deeplab/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="Semantic Segmentation from scratch in PyTorch." />
+<meta property="og:description" content="Implementing sematic segmentation from scratch." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/deeplab/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-03-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-06T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Semantic Segmentation from scratch in PyTorch."/>
+<meta name="twitter:description" content="Implementing sematic segmentation from scratch."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Semantic Segmentation from scratch in PyTorch.",
+      "item": "https://R4j4n.github.io/blogs/posts/deeplab/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Semantic Segmentation from scratch in PyTorch.",
+  "name": "Semantic Segmentation from scratch in PyTorch.",
+  "description": "Implementing sematic segmentation from scratch.",
+  "keywords": [
+    "Computer Vison", "PyTorch"
+  ],
+  "articleBody": "cover: image: “https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png\"\nManish dai ex. https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png alt: “” caption: “” relative: false # To use relative path for cover image, used in hugo Page-bundles\nThe DeepLabv3 paper was introduced in “Rethinking Atrous Convolution for Semantic Image Segmentation”. After DeepLabv1 and DeepLabv2 are invented, authors tried to RETHINK or restructure the DeepLab architecture and finally come up with a more enhanced DeepLabv3.\nThe DeepLabv3+ was introduced in “Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation” paper. It combines Atrous Spatial Pyramid Pooling(ASSP) from DeepLabv1(a) and Encoder Decoder Architecture from DeepLabv2(b).\nAtrous(Dilated) Convolution: fig 1: 3x3 Atrous(dilated) Convolution in action\nDilated convolutions introduce another parameter to the convolution layers called dilation rate ‘r’. The dilation factor controls the spacing between the kernel points. The convolution performed in this way is also known as the à trous algorithm. By controlling the rate parameter, we can arbitrarily control the receptive fields of the convolution layer. The receptive field is defined as the size of the region of the input feature map that produces each output element. This allows the convolution filter to look at larger areas of the input(receptive field) without a decrease in the spatial resolution or increase in the kernel size.\nFig. 1.2: Standard vs Dilated Kernel Atrous convolution is akin to the standard convolution except that the weights of an atrous convolution kernel are spaced r locations apart, i.e., the kernel of dilated convolution layers is sparse.\nThe Convolutions and max-pooling used in deep convolutions and the max-pooling layer have a disadvantage. At each step, the spatial resolution of the feature map is halved. Implanting or up-sampling the original feature map onto the original images results in sparse feature extraction.\nThe Atrous convolution allows the convolution filter to look at larger areas of input field without decreasing the spatial resolution or increasing the kernel size.\nLet x be the input feature map, y be the output and w be the filter, then atrous convolution for each location i on the output y is :\nWhere r corresponds to the dilation rate. Here, by adjusting r we can control the filter’\ns field of view.\nAtrous Convolution Block in pytorch: class Atrous_Convolution(nn.Module): \"\"\" Compute Atrous/Dilated Convolution. \"\"\" def __init__( self, input_channels, kernel_size, pad, dilation_rate, output_channels=256): super(Atrous_Convolution, self).__init__() self.conv = nn.Conv2d(in_channels=input_channels, out_channels=output_channels, kernel_size=kernel_size, padding=pad, dilation=dilation_rate, bias=False) self.batchnorm = nn.BatchNorm2d(output_channels) self.relu = nn.ReLU(inplace=True) def forward(self, x): x = self.conv(x) x = self.batchnorm(x) x = self.relu(x) return x Encoder: The Deeplabv3+ uses the Atrous Spatial Pyramid Pooling module, which probes convolution features at multiple scales by applying atrous convolution at different scales by applying atrous convolution with different rates with the image level features.\nAtrous Spatial Pyramid Pooling (ASPP): In ASPP, parallel atrous convolution with different rates is applied in the input feature map and fused together. The ASSP enables to encode of multi-scale contextual information, as objects of the same class can have different scales in the image.\nIn ASPP layer, one 1x1 convolution and three 3x3 convolutions with different rates (3, 6, 18) are applied. Also, an image pooling layer is applied for the global context. All filter layers have 256 filters with batch normalization. All the resulting filters from all the branches are then concatenated and passed through 1x1 convolution which generates the final logits.\nEncode block in pytorch: class ASSP(nn.Module): \"\"\" Encoder of DeepLabv3+. \"\"\" def __init__(self, in_channles, out_channles): \"\"\"Atrous Spatial Pyramid pooling layer Args: in_channles (int): No of input channel for Atrous_Convolution. out_channles (int): No of output channel for Atrous_Convolution. \"\"\" super(ASSP, self).__init__() self.conv_1x1 = Atrous_Convolution( input_channels=in_channles, output_channels=out_channles, kernel_size=1, pad=0, dilation_rate=1) self.conv_6x6 = Atrous_Convolution( input_channels=in_channles, output_channels=out_channles, kernel_size=3, pad=6, dilation_rate=6) self.conv_12x12 = Atrous_Convolution( input_channels=in_channles, output_channels=out_channles, kernel_size=3, pad=12, dilation_rate=12) self.conv_18x18 = Atrous_Convolution( input_channels=in_channles, output_channels=out_channles, kernel_size=3, pad=18, dilation_rate=18) self.image_pool = nn.Sequential( nn.AdaptiveAvgPool2d(1), nn.Conv2d( in_channels=in_channles, out_channels=out_channles, kernel_size=1, stride=1, padding=0, dilation=1, bias=False), nn.BatchNorm2d(256), nn.ReLU(inplace=True)) self.final_conv = Atrous_Convolution( input_channels=out_channles * 5, output_channels=out_channles, kernel_size=1, pad=0, dilation_rate=1) def forward(self, x): x_1x1 = self.conv_1x1(x) x_6x6 = self.conv_6x6(x) x_12x12 = self.conv_12x12(x) x_18x18 = self.conv_18x18(x) img_pool_opt = self.image_pool(x) img_pool_opt = F.interpolate( img_pool_opt, size=x_18x18.size()[2:], mode='bilinear', align_corners=True) # concatination of all features concat = torch.cat( (x_1x1, x_6x6, x_12x12, x_18x18, img_pool_opt), dim=1) x_final_conv = self.final_conv(concat) return x_final_conv Decoder: The encoder features are bi-linearly up-sampled by a factor of 4 and then concatenated with corresponding low-level features. 1X1 convolution is applied before concatenation so that the number of channels can be reduced. This is because the low-level features usually contain a large number of channels which may outweigh the importance of the rich encoder features. After concatenation, we apply 3X3 convolution to refine the features. The refined features are followed by another simple bi-linear up-sampling by a factor of 4.\nWrapping up the architecture: For the backbone network we will be using the ResNet50:\nclass ResNet_50(nn.Module): def __init__(self, output_layer=None): super(ResNet_50, self).__init__() self.pretrained = models.resnet50(pretrained=True) self.output_layer = output_layer self.layers = list(self.pretrained._modules.keys()) self.layer_count = 0 for l in self.layers: if l != self.output_layer: self.layer_count += 1 else: break for i in range(1, len(self.layers)-self.layer_count): self.dummy_var = self.pretrained._modules.pop(self.layers[-i]) self.net = nn.Sequential(self.pretrained._modules) self.pretrained = None def forward(self, x): x = self.net(x) return x class Deeplabv3Plus(nn.Module): def __init__(self, num_classes): super(Deeplabv3Plus, self).__init__() self.backbone = ResNet_50(output_layer='layer3') self.low_level_features = ResNet_50(output_layer='layer1') self.assp = ASSP(in_channles=1024, out_channles=256) self.conv1x1 = Atrous_Convolution( input_channels=256, output_channels=48, kernel_size=1, dilation_rate=1, pad=0) self.conv_3x3 = nn.Sequential( nn.Conv2d(304, 256, 3, padding=1, bias=False), nn.BatchNorm2d(256), nn.ReLU(inplace=True) ) self.classifer = nn.Conv2d(256, num_classes, 1) def forward(self, x): x_backbone = self.backbone(x) x_low_level = self.low_level_features(x) x_assp = self.assp(x_backbone) x_assp_upsampled = F.interpolate( x_assp, scale_factor=(4, 4), mode='bilinear', align_corners=True) x_conv1x1 = self.conv1x1(x_low_level) x_cat = torch.cat([x_conv1x1, x_assp_upsampled], dim=1) x_3x3 = self.conv_3x3(x_cat) x_3x3_upscaled = F.interpolate( x_3x3, scale_factor=(4, 4), mode='bilinear', align_corners=True) x_out = self.classifer(x_3x3_upscaled) return x_out Using Deeplabv3+ for Portrait mode (Background Blurring): The background blur effect which is also known as “bokeh” is a well-known effect that is used by many of us mainly for close up shots. It adds a sense of depth to our image as we only concentrate on a particular part of our image. For the task of background we will be using DeeplabV3+ to mask people in the image and apply blur to background.\nFor the dateset, we will be using person segmentation dataset. It consist of images and masks of 640X640 dimension with some augmentation like channel shuffle, rotation and Horizontal-flip etc.\nThe dateset can be downloaded from\nPerson segmentation\nDatasets and Dataloader: import os import torch import numpy as np from PIL import Image from torch.utils.data import Dataset, DataLoader TRAIN_IMG_DIR = \"data/new_data/train/image\" TRAIN_MASK_DIR = \"data/new_data/train/mask\" VAL_IMG_DIR = \"data/new_data/test/image\" VAL_MASK_DIR = \"data/new_data/test/mask\" class PersonSegmentData(Dataset): def __init__(self, image_dir, mask_dir, transform=None) -\u003e None: super(PersonSegmentData, self).__init__() self.image_dir = image_dir self.mask_dir = mask_dir self.transform = transform self.images = os.listdir(image_dir) def __len__(self): return len(self.images) def __getitem__(self, index): image_path = os.path.join(self.image_dir, self.images[index]) mask_path = os.path.join( self.mask_dir, self.images[index].replace(\".jpg\", \".png\")) image = np.array(Image.open(image_path).convert(\"RGB\")) mask = np.array(Image.open(mask_path).convert(\"L\"), dtype=np.float32) # l -\u003e grayscale mask[mask == 255.0] = 1.0 if self.transform is not None: augemantations = self.transform(image=image, mask=mask) image = augemantations['image'] mask = augemantations['mask'] return image, mask def get_data_loaders( train_dir, train_mask_dir, val_dir, val_maskdir, batch_size, train_transform, val_transform, num_workers=4, pin_memory=True): train_ds = PersonSegmentData( image_dir=train_dir, mask_dir=train_mask_dir, transform=train_transform) train_loader = DataLoader( train_ds, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory, shuffle=True, ) val_ds = PersonSegmentData( image_dir=val_dir, mask_dir=val_maskdir, transform=val_transform, ) val_loader = DataLoader( val_ds, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory, shuffle=False, ) return train_loader, val_loader Hyper-parameters , train and validation loader import os import torch import numpy as np from PIL import Image import albumentations as A from torch.utils.data import Dataset , DataLoader from albumentations.pytorch import ToTensorV2 from tqdm import tqdm import torch.nn as nn import torch.optim as optim LEARNING_RATE = 1e-4 DEVICE = \"cuda\" if torch.cuda.is_available() else \"cpu\" BATCH_SIZE = 8 NUM_EPOCHS = 10 NUM_WORKERS = 4 PIN_MEMORY = True LOAD_MODEL = False # train transform train_transform = A.Compose( [ A.Normalize( mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], max_pixel_value=255.0, ), ToTensorV2(), ], ) # validation transfroms val_transforms = A.Compose( [ A.Normalize( mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], max_pixel_value=255.0, ), ToTensorV2(), ], ) train_loader , val_loader = get_data_loaders( TRAIN_IMG_DIR, TRAIN_MASK_DIR, VAL_IMG_DIR, VAL_MASK_DIR, BATCH_SIZE, train_transform, val_transforms ) Visualizing the train_loader/val_loader: import matplotlib.pyplot as plt import numpy as np def show_transformed(train_loader): batch = next(iter(train_loader)) images, labels = batch for img , mask in zip(images,labels): plt.figure(figsize=(11,11)) plt.subplot(1,2,1) plt.imshow(np.transpose(img , (1,2,0))) plt.subplot(1,2,2) plt.imshow(mask.reshape(mask.shape[0],mask.shape[1] , 1)) show_transformed(val_loader) Loss, Optimizer and Metrics: Dice loss:\nThe Dice coefficient, or Dice-Sørensen coefficient, is a common metric for pixel segmentation that can also be modified to act as a loss function.\nWe prefer Dice Loss instead of Cross Entropy because most of the semantic segmentation comes from an unbalanced dateset. So, how most of the semantic segmentation datasets are unbalanced? Suppose you have an image of a cat and you want to segment your image as cat(foreground) vs not-cat(background). In most of these image cases you will likely see most of the pixel in an image that is not-cat (background). And on an average you may find that 70-90% of the pixel in the image corresponds to background and only 10-30% on the foreground. So, if we use CE loss the algorithm may predict most of the pixel as background even when they are not and still get low errors. But in case of Dice Loss ( function of Intersection and Union over foreground pixel ) if the model predicts all the pixel as background the intersection would be 0 this would give rise to error=1 ( maximum error as Dice loss is between 0 and 1). Hence, Dice loss gives low error as it focuses on maximizing the intersection area over foreground while minimizing the Union over foreground. For our task we will be using the BCEDice lossThis loss combines Dice loss with the standard binary cross-entropy (BCE) loss that is generally the default for segmentation models. Combining the two methods allows for some diversity in the loss, while benefiting from the stability of BCE.\nclass DiceBCELoss(nn.Module): def __init__(self, weight=None, size_average=True): super(DiceBCELoss, self).__init__() self.bce_losss = nn.BCEWithLogitsLoss() def forward(self, inputs, targets, smooth=1): BCE = self.bce_losss(inputs, targets) inputs = torch.sigmoid(inputs) # flatten label and prediction tensors inputs = inputs.view(-1) targets = targets.view(-1) intersection = (inputs * targets).sum() dice_loss = 1 - (2.*intersection + smooth)/( inputs.sum() + targets.sum() + smooth) Dice_BCE = BCE + dice_loss return Dice_BCE IOU:\nHere we will be using the intersection over union as a performance metric for each batch in the training datasets. It is used to detect if the image is segmented right and how perfectly the image is segmented.\nThe IoU of a proposed set of object pixels and a set of true object pixels is calculated as:\nclass IOU(nn.Module): def __init__(self, weight=None, size_average=True): super(IOU, self).__init__() def forward(self, inputs, targets, smooth=1): # comment out if your model contains a sigmoid or equivalent activation layer inputs = torch.sigmoid(inputs) # flatten label and prediction tensors inputs = inputs.view(-1) targets = targets.view(-1) # intersection is equivalent to True Positive count # union is the mutually inclusive area of all labels \u0026 predictions intersection = (inputs * targets).sum() total = (inputs + targets).sum() union = total - intersection IoU = (intersection + smooth)/(union + smooth) return IoU The Training loop: def save_checkpoint(state, filename=\"resize.pth.tar\"): \"\"\" saves checkpoint for each epoch \"\"\" print(\"=\u003e Saving checkpoint\") torch.save(state, filename) model = Deeplabv3Plus(num_classes=1).to(DEVICE) loss_fn = DiceBCELoss() iou_fn = IOU() scaler = torch.cuda.amp.GradScaler() optimizer = optim.Adam(model.parameters(), lr = LEARNING_RATE) train_iou = [] train_loss = [] for epoch in range(NUM_EPOCHS): print(f\"Epoch: {epoch+1}/{NUM_EPOCHS}\") iterations = 0 iter_loss = 0.0 iter_iou = 0.0 batch_loop = tqdm(train_loader) for batch_idx,(data,targets) in enumerate(batch_loop): data = data.to(device = DEVICE) targets = targets.float().unsqueeze(1).to(device=DEVICE) with torch.cuda.amp.autocast(): predictions = model(data) loss = loss_fn(predictions , targets) iou = iou_fn(predictions , targets) iter_loss += loss.item() iter_iou += iou.item() optimizer.zero_grad() scaler.scale(loss).backward() scaler.step(optimizer) scaler.update() iterations += 1 batch_loop.set_postfix(diceloss = loss.item(), iou = iou.item()) train_loss.append(iter_loss / iterations) train_iou.append(iter_iou/iterations) print(f\"Epoch: {epoch+1}/{NUM_EPOCHS}, Training loss: {round(train_loss[-1] , 3)}\") checkpoint = { \"state_dict\" : model.state_dict(), \"optimizer\" : optimizer.state_dict() } save_checkpoint(checkpoint) num_correct = 0 num_pixels = 0 dice_score = 0 model.eval() with torch.no_grad(): for x, y in val_loader: x = x.to(DEVICE) y = y.to(DEVICE).unsqueeze(1) preds = torch.sigmoid(model(x)) preds = (preds \u003e 0.5).float() num_correct += (preds == y).sum() num_pixels += torch.numel(preds) dice_score += (2 * (preds * y).sum()) / ( (preds + y).sum() + 1e-8 ) print( f\"Got {num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}\" ) print(f\"Dice score: {dice_score/len(val_loader)}\") model.train() Epoch: 1/10 100%|██████████| 2556/2556 [22:30\u003c00:00, 1.89it/s, diceloss=0.108, iou=0.902] Epoch: 1/10, Training loss: 0.24 =\u003e Saving checkpoint Got 222509495/232243200 with acc 95.81 Dice score: 0.9310375452041626 Epoch: 2/10 100%|██████████| 2556/2556 [22:33\u003c00:00, 1.89it/s, diceloss=0.0504, iou=0.943] Epoch: 2/10, Training loss: 0.136 =\u003e Saving checkpoint Got 225145355/232243200 with acc 96.94 Dice score: 0.9528669714927673 . . . . Epoch: 10/10 100%|██████████| 2556/2556 [22:33\u003c00:00, 1.89it/s, diceloss=0.0361, iou=0.972] Epoch: 10/10, Training loss: 0.042 =\u003e Saving checkpoint Got 226039920/232243200 with acc 97.33 Dice score: 0.9583981037139893 Fig: BCEDice loss and iou over 10 epochs Entire training process can be found here:\nSegmentation_Deeplabv3+\nTesting our model: from models.deeplabv3plus import Deeplabv3Plus import torch import torchvision import cv2 import numpy as np from PIL import Image import albumentations as A from albumentations.pytorch import ToTensorV2 from torch.utils.data import Dataset, DataLoader from models.deeplabv3plus import Deeplabv3Plus from copy import deepcopy DEVICE = \"cuda\" if torch.cuda.is_available() else \"cpu\" def resize_with_aspect_ratio( image, width=None, height=None, inter=cv2.INTER_AREA ): dim = None (h, w) = image.shape[:2] if width is None and height is None: return image if width is None: r = height / float(h) dim = (int(w * r), height) else: r = width / float(w) dim = (width, int(h * r)) return cv2.resize(image, dim, interpolation=inter) class ImageDataset(Dataset): def __init__(self, images: np.ndarray, transform=None) -\u003e None: super(ImageDataset, self).__init__() self.transform = transform self.images = images def __len__(self): return len(self.images) def __getitem__(self, index): image = self.images[index] image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) if self.transform is not None: augemantations = self.transform(image=image) image = augemantations['image'] return image class SegmentBackground(): def __init__(self, model_pth: str) -\u003e None: self.transforms_ = A.Compose( [ A.Normalize( mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], max_pixel_value=255.0, ), A.Resize(640, 640, p=1.0), ToTensorV2(), ],) self.model = Deeplabv3Plus(num_classes=1).to(DEVICE) state = torch.load(model_pth, map_location=DEVICE) self.model.load_state_dict(state['state_dict']) def blur_backgrond(self, image, mask): mask = mask[0].cpu().numpy().transpose(1, 2, 0) new_mapp = deepcopy(mask) new_mapp[mask == 0.0] = 0 new_mapp[mask == 1.0] = 255 orig_imginal = np.array(image) mapping_resized = cv2.resize(new_mapp, (orig_imginal.shape[1], orig_imginal.shape[0]), Image.ANTIALIAS) mapping_resized = mapping_resized.astype(\"uint8\") blurred = cv2.GaussianBlur(mapping_resized, (15, 15), sigmaX=0) _, thresholded_img = cv2.threshold( blurred, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU) mapping = cv2.cvtColor(thresholded_img, cv2.COLOR_GRAY2RGB) blurred_original_image = cv2.GaussianBlur(orig_imginal, (101, 101), 0) layered_image = np.where(mapping != (0, 0, 0), orig_imginal, blurred_original_image) cv2.imwrite(\"model_prediction/blurred.jpg\" , resize_with_aspect_ratio(layered_image , 800)) print(\"Done!\") def segement(self, image_paths): images_list = [cv2.imread(x) for x in image_paths] images = ImageDataset(images_list, transform=self.transforms_) loader = torch.utils.data.DataLoader( images, batch_size=1, num_workers=1) self.model.eval() folder = \"model_prediction/\" generated_mask = [] for idx, img in enumerate(loader): x = img.to(device=DEVICE) with torch.no_grad(): preds = torch.sigmoid(self.model(x)) preds = (preds \u003e 0.5).float() generated_mask.append(preds) torchvision.utils.save_image( preds, f\"{folder}/pred_{idx}.png\" ) for img, mask in zip(images_list, generated_mask): self.blur_backgrond(img, mask) if __name__ == \"__main__\": image_path = \"inference/test_images/lachlan-dempsey-6VPEOdpFNAs-unsplash.jpg\" # img = cv2.imread(image_path) segmenter = SegmentBackground(\"resize.pth.tar\") segmenter.segement([image_path]) Output: ",
+  "wordCount" : "2419",
+  "inLanguage": "en",
+  "datePublished": "2023-03-06T00:00:00Z",
+  "dateModified": "2023-03-06T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/deeplab/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Semantic Segmentation from scratch in PyTorch.
+    </h1>
+    <div class="post-description">
+      Implementing sematic segmentation from scratch.
+    </div>
+    <div class="post-meta"><span title='2023-03-06 00:00:00 +0000 UTC'>March 6, 2023</span>&nbsp;·&nbsp;12 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#manish-dai" aria-label="Manish dai">Manish dai</a></li>
+                <li>
+                    <a href="#ex-httpsiibbcok0hvpbdpaper-mod-profilemodepng" aria-label="ex. https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png">ex. <a href="https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png">https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png</a></a><ul>
+                        
+                <li>
+                    <a href="#atrousdilated-convolution" aria-label="Atrous(Dilated) Convolution:"><strong><strong>Atrous(Dilated) Convolution:</strong></strong></a><ul>
+                        
+                <li>
+                    <a href="#atrous-convolution-block-in-pytorch" aria-label="Atrous Convolution Block in pytorch:">Atrous Convolution Block in pytorch:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#encoder" aria-label="Encoder:">Encoder:</a><ul>
+                        
+                <li>
+                    <a href="#atrous-spatial-pyramid-pooling-aspp" aria-label="Atrous Spatial Pyramid Pooling (ASPP):"><strong><strong>Atrous Spatial Pyramid Pooling (ASPP):</strong></strong></a></li>
+                <li>
+                    <a href="#encode-block-in-pytorch" aria-label="Encode block in pytorch:">Encode block in pytorch:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#decoder" aria-label="Decoder:">Decoder:</a></li>
+                <li>
+                    <a href="#wrapping-up-the-architecture" aria-label="Wrapping up the architecture:">Wrapping up the architecture:</a></li>
+                <li>
+                    <a href="#using-deeplabv3-for-portrait-mode-background-blurring" aria-label="Using Deeplabv3&#43; for Portrait mode (Background Blurring):">Using Deeplabv3+ for Portrait mode (Background Blurring):</a><ul>
+                        
+                <li>
+                    <a href="#datasets-and-dataloader" aria-label="Datasets and Dataloader:">Datasets and Dataloader:</a></li>
+                <li>
+                    <a href="#hyper-parameters--train-and-validation-loader" aria-label="Hyper-parameters , train and validation loader">Hyper-parameters , train and validation loader</a></li>
+                <li>
+                    <a href="#visualizing-the-train_loaderval_loader" aria-label="Visualizing the train_loader/val_loader:">Visualizing the train_loader/val_loader:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#loss-optimizer-and-metrics" aria-label="Loss, Optimizer and Metrics:">Loss, Optimizer and Metrics:</a></li>
+                <li>
+                    <a href="#the-training-loop" aria-label="The Training loop:">The Training loop:</a></li>
+                <li>
+                    <a href="#testing-our-model" aria-label="Testing our model:">Testing our model:</a></li>
+                <li>
+                    <a href="#output" aria-label="Output:">Output:</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>cover:
+image: &ldquo;<a href="https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png%22">https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png&quot;</a></p>
+<h1 id="manish-dai">Manish dai<a hidden class="anchor" aria-hidden="true" href="#manish-dai">#</a></h1>
+<h1 id="ex-httpsiibbcok0hvpbdpaper-mod-profilemodepng">ex. <a href="https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png">https://i.ibb.co/K0HVPBd/paper-mod-profilemode.png</a><a hidden class="anchor" aria-hidden="true" href="#ex-httpsiibbcok0hvpbdpaper-mod-profilemodepng">#</a></h1>
+<p>alt: &ldquo;<!-- raw HTML omitted -->&rdquo;
+caption: &ldquo;<!-- raw HTML omitted -->&rdquo;
+relative: false # To use relative path for cover image, used in hugo Page-bundles</p>
+<p>The DeepLabv3 paper was introduced in <strong>“Rethinking Atrous Convolution for Semantic Image Segmentation”</strong>. After DeepLabv1 and DeepLabv2 are invented, authors tried to RETHINK or restructure the DeepLab architecture and finally come up with a more enhanced DeepLabv3.</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/720/1*Llh9dQ1ZMBqPMOJSf7WaBQ.webp" alt="https://miro.medium.com/max/720/1*Llh9dQ1ZMBqPMOJSf7WaBQ.webp"  />
+</p>
+<p>The DeepLabv3+ was introduced in “<strong><strong>Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation</strong></strong>” paper. It combines Atrous Spatial Pyramid Pooling(ASSP) from <strong>DeepLabv1(a)</strong> and Encoder Decoder Architecture from <strong>DeepLabv2(b).</strong></p>
+<p><img loading="lazy" src="https://i.imgur.com/f6fLtwg.png" alt="Architecture-of-DeepLabV3-with-backbone-network.png"  />
+</p>
+<h2 id="atrousdilated-convolution"><strong><strong>Atrous(Dilated) Convolution:</strong></strong><a hidden class="anchor" aria-hidden="true" href="#atrousdilated-convolution">#</a></h2>
+<p><img loading="lazy" src="https://miro.medium.com/max/640/1*SVkgHoFoiMZkjy54zM_SUw.gif" alt="fig 1: 3x3 Atrous(dilated) Convolution in action"  />
+</p>
+<p>fig 1: 3x3 Atrous(dilated) Convolution in action</p>
+<p>Dilated convolutions introduce another parameter to the convolution layers called <strong>dilation rate ‘r’</strong>. The dilation factor controls the spacing between the kernel points. The convolution performed in this way is also known as the à trous algorithm. By controlling the rate parameter, we can arbitrarily control the receptive fields of the convolution layer. The receptive field is defined as the size of the region of the input feature map that produces each output element. This allows the convolution filter to look at larger areas of the input(receptive field) without a decrease in the spatial resolution or increase in the kernel size.</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/640/1*xBz2R6qoArKjkthYzKLZMQ.png" alt="                Fig. 1.2: Standard vs Dilated Kernel"  />
+</p>
+<pre><code>            Fig. 1.2: Standard vs Dilated Kernel
+</code></pre>
+<p>Atrous convolution is akin to the standard convolution except that the weights of an atrous convolution kernel are spaced <strong>r</strong> locations apart, i.e., the kernel of dilated convolution layers is sparse.</p>
+<p>The Convolutions and max-pooling used in deep convolutions and the max-pooling layer have a disadvantage. At each step, the spatial resolution of the feature map is halved. Implanting or up-sampling the original feature map onto the original images results in sparse feature extraction.</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/720/1*dxK0C3WBBqk_eF0k8KRScQ.png" alt="https://miro.medium.com/max/720/1*dxK0C3WBBqk_eF0k8KRScQ.png"  />
+</p>
+<p>The Atrous convolution allows the convolution filter to look at larger areas of input field without decreasing the spatial resolution or increasing the kernel size.</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/720/1*zKvtCFhcHpMCQhhjanq12w.png" alt="https://miro.medium.com/max/720/1*zKvtCFhcHpMCQhhjanq12w.png"  />
+</p>
+<p>Let <strong>x</strong> be the input feature map, <strong>y</strong> be the output and <strong>w</strong> be the filter, then atrous convolution for each location <strong>i</strong> on the output <strong>y</strong> is :</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/608/1*Gm3S_I_8A4QWIgqmNSDjQQ.png" alt="https://miro.medium.com/max/608/1*Gm3S_I_8A4QWIgqmNSDjQQ.png"  />
+</p>
+<p>Where <em><strong>r</strong></em> corresponds to the dilation rate.  Here, by adjusting r we can control the filter’</p>
+<p>s field of view.</p>
+<h3 id="atrous-convolution-block-in-pytorch">Atrous Convolution Block in pytorch:<a hidden class="anchor" aria-hidden="true" href="#atrous-convolution-block-in-pytorch">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Atrous_Convolution</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">		Compute Atrous/Dilated Convolution.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(
+</span></span><span style="display:flex;"><span>            self, input_channels, kernel_size, pad, dilation_rate,
+</span></span><span style="display:flex;"><span>            output_channels<span style="color:#f92672">=</span><span style="color:#ae81ff">256</span>):
+</span></span><span style="display:flex;"><span>        super(Atrous_Convolution, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(in_channels<span style="color:#f92672">=</span>input_channels,
+</span></span><span style="display:flex;"><span>                              out_channels<span style="color:#f92672">=</span>output_channels,
+</span></span><span style="display:flex;"><span>                              kernel_size<span style="color:#f92672">=</span>kernel_size, padding<span style="color:#f92672">=</span>pad,
+</span></span><span style="display:flex;"><span>                              dilation<span style="color:#f92672">=</span>dilation_rate, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>batchnorm <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>BatchNorm2d(output_channels)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>relu <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>batchnorm(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><h2 id="encoder">Encoder:<a hidden class="anchor" aria-hidden="true" href="#encoder">#</a></h2>
+<p>The Deeplabv3+ uses the Atrous Spatial Pyramid Pooling module, which probes convolution features at multiple scales by applying atrous convolution at different scales by applying atrous convolution with different rates with the image level features.</p>
+<h3 id="atrous-spatial-pyramid-pooling-aspp"><strong><strong>Atrous Spatial Pyramid Pooling (ASPP):</strong></strong><a hidden class="anchor" aria-hidden="true" href="#atrous-spatial-pyramid-pooling-aspp">#</a></h3>
+<p>In ASPP, parallel atrous convolution with different rates is applied in the input feature map and fused together.  The ASSP enables to encode of multi-scale contextual information, as objects of the same class can have different scales in the image.</p>
+<p>In ASPP layer, one 1x1 convolution and three 3x3 convolutions with different rates (3, 6, 18) are applied. Also, an image pooling layer is applied for the global context. All filter layers have 256 filters with batch normalization. All the resulting filters from all the branches are then concatenated and passed through 1x1 convolution which generates the final logits.</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/720/1*_8p_KTPr5N0HSeIKV35G_g.png" alt="https://miro.medium.com/max/720/1*_8p_KTPr5N0HSeIKV35G_g.png"  />
+</p>
+<h3 id="encode-block-in-pytorch">Encode block in pytorch:<a hidden class="anchor" aria-hidden="true" href="#encode-block-in-pytorch">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ASSP</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">			Encoder of DeepLabv3+.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, in_channles, out_channles):
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;&#34;Atrous Spatial Pyramid pooling layer
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        Args:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            in_channles (int): No of input channel for Atrous_Convolution.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            out_channles (int): No of output channel for Atrous_Convolution.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>        super(ASSP, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv_1x1 <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span>in_channles, output_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>            kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv_6x6 <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span>in_channles, output_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>            kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">6</span>, dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">6</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv_12x12 <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span>in_channles, output_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>            kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">12</span>, dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">12</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv_18x18 <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span>in_channles, output_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>            kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">18</span>, dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">18</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>image_pool <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>AdaptiveAvgPool2d(<span style="color:#ae81ff">1</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Conv2d(
+</span></span><span style="display:flex;"><span>                in_channels<span style="color:#f92672">=</span>in_channles, out_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>                kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, dilation<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>BatchNorm2d(<span style="color:#ae81ff">256</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>final_conv <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span>out_channles <span style="color:#f92672">*</span> <span style="color:#ae81ff">5</span>, output_channels<span style="color:#f92672">=</span>out_channles,
+</span></span><span style="display:flex;"><span>            kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x_1x1 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv_1x1(x)
+</span></span><span style="display:flex;"><span>        x_6x6 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv_6x6(x)
+</span></span><span style="display:flex;"><span>        x_12x12 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv_12x12(x)
+</span></span><span style="display:flex;"><span>        x_18x18 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv_18x18(x)
+</span></span><span style="display:flex;"><span>        img_pool_opt <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>image_pool(x)
+</span></span><span style="display:flex;"><span>        img_pool_opt <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>interpolate(
+</span></span><span style="display:flex;"><span>            img_pool_opt, size<span style="color:#f92672">=</span>x_18x18<span style="color:#f92672">.</span>size()[<span style="color:#ae81ff">2</span>:],
+</span></span><span style="display:flex;"><span>            mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;bilinear&#39;</span>, align_corners<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e"># concatination of all features</span>
+</span></span><span style="display:flex;"><span>        concat <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cat(
+</span></span><span style="display:flex;"><span>            (x_1x1, x_6x6, x_12x12, x_18x18, img_pool_opt),
+</span></span><span style="display:flex;"><span>            dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        x_final_conv <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>final_conv(concat)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x_final_conv
+</span></span></code></pre></div><h2 id="decoder">Decoder:<a hidden class="anchor" aria-hidden="true" href="#decoder">#</a></h2>
+<p>The encoder features are bi-linearly up-sampled by a factor of 4 and then concatenated with corresponding low-level features. 1X1 convolution is applied before concatenation so that the number of channels can be reduced. This is because the low-level features usually contain a large number of channels which may outweigh the importance of the rich encoder features. After concatenation, we apply 3X3 convolution to refine the features. The refined features are followed by another simple bi-linear up-sampling by a factor of 4.</p>
+<h2 id="wrapping-up-the-architecture">Wrapping up the architecture:<a hidden class="anchor" aria-hidden="true" href="#wrapping-up-the-architecture">#</a></h2>
+<p>For the backbone network we will be using the ResNet50:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ResNet_50</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, output_layer<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>        super(ResNet_50, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pretrained <span style="color:#f92672">=</span> models<span style="color:#f92672">.</span>resnet50(pretrained<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>output_layer <span style="color:#f92672">=</span> output_layer
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layers <span style="color:#f92672">=</span> list(self<span style="color:#f92672">.</span>pretrained<span style="color:#f92672">.</span>_modules<span style="color:#f92672">.</span>keys())
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layer_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> l <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>layers:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> l <span style="color:#f92672">!=</span> self<span style="color:#f92672">.</span>output_layer:
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>layer_count <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, len(self<span style="color:#f92672">.</span>layers)<span style="color:#f92672">-</span>self<span style="color:#f92672">.</span>layer_count):
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>dummy_var <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pretrained<span style="color:#f92672">.</span>_modules<span style="color:#f92672">.</span>pop(self<span style="color:#f92672">.</span>layers[<span style="color:#f92672">-</span>i])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>net <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(self<span style="color:#f92672">.</span>pretrained<span style="color:#f92672">.</span>_modules)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pretrained <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>net(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Deeplabv3Plus</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, num_classes):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        super(Deeplabv3Plus, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>backbone <span style="color:#f92672">=</span> ResNet_50(output_layer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;layer3&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>low_level_features <span style="color:#f92672">=</span> ResNet_50(output_layer<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;layer1&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>assp <span style="color:#f92672">=</span> ASSP(in_channles<span style="color:#f92672">=</span><span style="color:#ae81ff">1024</span>, out_channles<span style="color:#f92672">=</span><span style="color:#ae81ff">256</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv1x1 <span style="color:#f92672">=</span> Atrous_Convolution(
+</span></span><span style="display:flex;"><span>            input_channels<span style="color:#f92672">=</span><span style="color:#ae81ff">256</span>, output_channels<span style="color:#f92672">=</span><span style="color:#ae81ff">48</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>            dilation_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, pad<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv_3x3 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">304</span>, <span style="color:#ae81ff">256</span>, <span style="color:#ae81ff">3</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>BatchNorm2d(<span style="color:#ae81ff">256</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>classifer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">256</span>, num_classes, <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x_backbone <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>backbone(x)
+</span></span><span style="display:flex;"><span>        x_low_level <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>low_level_features(x)
+</span></span><span style="display:flex;"><span>        x_assp <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>assp(x_backbone)
+</span></span><span style="display:flex;"><span>        x_assp_upsampled <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>interpolate(
+</span></span><span style="display:flex;"><span>            x_assp, scale_factor<span style="color:#f92672">=</span>(<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">4</span>),
+</span></span><span style="display:flex;"><span>            mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;bilinear&#39;</span>, align_corners<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>        x_conv1x1 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv1x1(x_low_level)
+</span></span><span style="display:flex;"><span>        x_cat <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cat([x_conv1x1, x_assp_upsampled], dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        x_3x3 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv_3x3(x_cat)
+</span></span><span style="display:flex;"><span>        x_3x3_upscaled <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>interpolate(
+</span></span><span style="display:flex;"><span>            x_3x3, scale_factor<span style="color:#f92672">=</span>(<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">4</span>),
+</span></span><span style="display:flex;"><span>            mode<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;bilinear&#39;</span>, align_corners<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>        x_out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>classifer(x_3x3_upscaled)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x_out
+</span></span></code></pre></div><h2 id="using-deeplabv3-for-portrait-mode-background-blurring">Using Deeplabv3+ for Portrait mode (Background Blurring):<a hidden class="anchor" aria-hidden="true" href="#using-deeplabv3-for-portrait-mode-background-blurring">#</a></h2>
+<p>The background blur effect which is also known as “bokeh” is a well-known effect that is used by many of us mainly for close up shots. It adds a sense of depth to our image as we only concentrate on a particular part of our image. For the task of background we will be using DeeplabV3+ to mask people in the image and apply blur to background.</p>
+<p>For the dateset,  we will be using person segmentation dataset. It consist of images and masks of 640X640 dimension with some augmentation like channel shuffle, rotation and Horizontal-flip etc.</p>
+<p>The dateset can be downloaded from</p>
+<p><a href="https://www.kaggle.com/datasets/rajanghimire/person-segmentation?datasetId=2656948&amp;sortBy=dateRun&amp;tab=profile">Person segmentation</a></p>
+<h3 id="datasets-and-dataloader">Datasets and Dataloader:<a hidden class="anchor" aria-hidden="true" href="#datasets-and-dataloader">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> PIL <span style="color:#f92672">import</span> Image
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> Dataset, DataLoader
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TRAIN_IMG_DIR <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;data/new_data/train/image&#34;</span>
+</span></span><span style="display:flex;"><span>TRAIN_MASK_DIR <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;data/new_data/train/mask&#34;</span>
+</span></span><span style="display:flex;"><span>VAL_IMG_DIR <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;data/new_data/test/image&#34;</span>
+</span></span><span style="display:flex;"><span>VAL_MASK_DIR <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;data/new_data/test/mask&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PersonSegmentData</span>(Dataset):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, image_dir, mask_dir, transform<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super(PersonSegmentData, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>image_dir <span style="color:#f92672">=</span> image_dir
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>mask_dir <span style="color:#f92672">=</span> mask_dir
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>transform <span style="color:#f92672">=</span> transform
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>images <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>listdir(image_dir)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __len__(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> len(self<span style="color:#f92672">.</span>images)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __getitem__(self, index):
+</span></span><span style="display:flex;"><span>        image_path <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>image_dir, self<span style="color:#f92672">.</span>images[index])
+</span></span><span style="display:flex;"><span>        mask_path <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>mask_dir, self<span style="color:#f92672">.</span>images[index]<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#34;.jpg&#34;</span>, <span style="color:#e6db74">&#34;.png&#34;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        image <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(Image<span style="color:#f92672">.</span>open(image_path)<span style="color:#f92672">.</span>convert(<span style="color:#e6db74">&#34;RGB&#34;</span>))
+</span></span><span style="display:flex;"><span>        mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(Image<span style="color:#f92672">.</span>open(mask_path)<span style="color:#f92672">.</span>convert(<span style="color:#e6db74">&#34;L&#34;</span>),
+</span></span><span style="display:flex;"><span>                        dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>float32)  <span style="color:#75715e"># l -&gt; grayscale</span>
+</span></span><span style="display:flex;"><span>        mask[mask <span style="color:#f92672">==</span> <span style="color:#ae81ff">255.0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>transform <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            augemantations <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>transform(image<span style="color:#f92672">=</span>image, mask<span style="color:#f92672">=</span>mask)
+</span></span><span style="display:flex;"><span>            image <span style="color:#f92672">=</span> augemantations[<span style="color:#e6db74">&#39;image&#39;</span>]
+</span></span><span style="display:flex;"><span>            mask <span style="color:#f92672">=</span> augemantations[<span style="color:#e6db74">&#39;mask&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> image, mask
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_data_loaders</span>(
+</span></span><span style="display:flex;"><span>        train_dir, train_mask_dir, val_dir, val_maskdir, batch_size,
+</span></span><span style="display:flex;"><span>        train_transform, val_transform, num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>, pin_memory<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    train_ds <span style="color:#f92672">=</span> PersonSegmentData(
+</span></span><span style="display:flex;"><span>        image_dir<span style="color:#f92672">=</span>train_dir, mask_dir<span style="color:#f92672">=</span>train_mask_dir,
+</span></span><span style="display:flex;"><span>        transform<span style="color:#f92672">=</span>train_transform)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    train_loader <span style="color:#f92672">=</span> DataLoader(
+</span></span><span style="display:flex;"><span>        train_ds,
+</span></span><span style="display:flex;"><span>        batch_size<span style="color:#f92672">=</span>batch_size,
+</span></span><span style="display:flex;"><span>        num_workers<span style="color:#f92672">=</span>num_workers,
+</span></span><span style="display:flex;"><span>        pin_memory<span style="color:#f92672">=</span>pin_memory,
+</span></span><span style="display:flex;"><span>        shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    val_ds <span style="color:#f92672">=</span> PersonSegmentData(
+</span></span><span style="display:flex;"><span>        image_dir<span style="color:#f92672">=</span>val_dir,
+</span></span><span style="display:flex;"><span>        mask_dir<span style="color:#f92672">=</span>val_maskdir,
+</span></span><span style="display:flex;"><span>        transform<span style="color:#f92672">=</span>val_transform,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    val_loader <span style="color:#f92672">=</span> DataLoader(
+</span></span><span style="display:flex;"><span>        val_ds,
+</span></span><span style="display:flex;"><span>        batch_size<span style="color:#f92672">=</span>batch_size,
+</span></span><span style="display:flex;"><span>        num_workers<span style="color:#f92672">=</span>num_workers,
+</span></span><span style="display:flex;"><span>        pin_memory<span style="color:#f92672">=</span>pin_memory,
+</span></span><span style="display:flex;"><span>        shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> train_loader, val_loader
+</span></span></code></pre></div><h3 id="hyper-parameters--train-and-validation-loader">Hyper-parameters , train and validation loader<a hidden class="anchor" aria-hidden="true" href="#hyper-parameters--train-and-validation-loader">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> PIL <span style="color:#f92672">import</span> Image
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> albumentations <span style="color:#66d9ef">as</span> A
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> Dataset , DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> albumentations.pytorch <span style="color:#f92672">import</span> ToTensorV2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> tqdm <span style="color:#f92672">import</span> tqdm
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.optim <span style="color:#66d9ef">as</span> optim
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>LEARNING_RATE <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-4</span>
+</span></span><span style="display:flex;"><span>DEVICE <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cuda&#34;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#34;cpu&#34;</span>
+</span></span><span style="display:flex;"><span>BATCH_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>NUM_EPOCHS <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>NUM_WORKERS <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
+</span></span><span style="display:flex;"><span>PIN_MEMORY <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>LOAD_MODEL <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># train transform </span>
+</span></span><span style="display:flex;"><span>train_transform <span style="color:#f92672">=</span> A<span style="color:#f92672">.</span>Compose(
+</span></span><span style="display:flex;"><span>    [
+</span></span><span style="display:flex;"><span>        A<span style="color:#f92672">.</span>Normalize(
+</span></span><span style="display:flex;"><span>            mean<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>],
+</span></span><span style="display:flex;"><span>            std<span style="color:#f92672">=</span>[<span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>],
+</span></span><span style="display:flex;"><span>            max_pixel_value<span style="color:#f92672">=</span><span style="color:#ae81ff">255.0</span>,
+</span></span><span style="display:flex;"><span>        ),
+</span></span><span style="display:flex;"><span>        ToTensorV2(),
+</span></span><span style="display:flex;"><span>    ],
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># validation transfroms</span>
+</span></span><span style="display:flex;"><span>val_transforms <span style="color:#f92672">=</span> A<span style="color:#f92672">.</span>Compose(
+</span></span><span style="display:flex;"><span>    [
+</span></span><span style="display:flex;"><span>        A<span style="color:#f92672">.</span>Normalize(
+</span></span><span style="display:flex;"><span>            mean<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>],
+</span></span><span style="display:flex;"><span>            std<span style="color:#f92672">=</span>[<span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>],
+</span></span><span style="display:flex;"><span>            max_pixel_value<span style="color:#f92672">=</span><span style="color:#ae81ff">255.0</span>,
+</span></span><span style="display:flex;"><span>        ),
+</span></span><span style="display:flex;"><span>        ToTensorV2(),
+</span></span><span style="display:flex;"><span>    ],
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_loader , val_loader <span style="color:#f92672">=</span> get_data_loaders(
+</span></span><span style="display:flex;"><span>    TRAIN_IMG_DIR,
+</span></span><span style="display:flex;"><span>    TRAIN_MASK_DIR,
+</span></span><span style="display:flex;"><span>    VAL_IMG_DIR,
+</span></span><span style="display:flex;"><span>    VAL_MASK_DIR,
+</span></span><span style="display:flex;"><span>    BATCH_SIZE,
+</span></span><span style="display:flex;"><span>    train_transform, 
+</span></span><span style="display:flex;"><span>    val_transforms
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><h3 id="visualizing-the-train_loaderval_loader">Visualizing the train_loader/val_loader:<a hidden class="anchor" aria-hidden="true" href="#visualizing-the-train_loaderval_loader">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#66d9ef">as</span> plt
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">show_transformed</span>(train_loader):
+</span></span><span style="display:flex;"><span>    batch <span style="color:#f92672">=</span> next(iter(train_loader))
+</span></span><span style="display:flex;"><span>    images, labels <span style="color:#f92672">=</span> batch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> img , mask <span style="color:#f92672">in</span> zip(images,labels):
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">11</span>,<span style="color:#ae81ff">11</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>imshow(np<span style="color:#f92672">.</span>transpose(img , (<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">0</span>)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>imshow(mask<span style="color:#f92672">.</span>reshape(mask<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>],mask<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>] , <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>show_transformed(val_loader)
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/ZrFB5FO.png" alt="Output"  />
+</p>
+<p><img loading="lazy" src="https://i.imgur.com/Qxbtftz.png" alt="Output"  />
+</p>
+<p><img loading="lazy" src="https://i.imgur.com/zriIgsE.png" alt="Output"  />
+</p>
+<h2 id="loss-optimizer-and-metrics">Loss, Optimizer and Metrics:<a hidden class="anchor" aria-hidden="true" href="#loss-optimizer-and-metrics">#</a></h2>
+<p><strong>Dice loss:</strong></p>
+<p>The Dice coefficient, or Dice-Sørensen coefficient, is a common metric for pixel segmentation that can also be modified to act as a loss function.</p>
+<p><img loading="lazy" src="https://i.stack.imgur.com/OsH4y.png" alt="https://i.stack.imgur.com/OsH4y.png"  />
+</p>
+<p>We prefer Dice Loss instead of Cross Entropy because most of the semantic segmentation comes from an unbalanced dateset. So, how most of the semantic segmentation datasets are unbalanced? Suppose you have an image of a cat and you want to segment your image as cat(foreground) vs not-cat(background). In most of these image cases you will likely see most of the pixel in an image that is not-cat (background). And on an average you may find that 70-90% of the pixel in the image corresponds to background and only 10-30% on the foreground. So, if we use CE loss the algorithm may predict most of the pixel as background even when they are not and still get low errors. But in case of Dice Loss ( function of Intersection and Union over foreground pixel ) if the model predicts all the pixel as background the intersection would be 0 this would give rise to error=1 ( maximum error as Dice loss is between 0 and 1).  Hence, Dice loss gives low error as it focuses on maximizing the intersection area over foreground while minimizing the Union over foreground. For our task we will be using the <strong>BCEDice</strong> lossThis loss combines Dice loss with the standard binary cross-entropy (BCE) loss that is generally the default for segmentation models. Combining the two methods allows for some diversity in the loss, while benefiting from the stability of BCE.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DiceBCELoss</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, weight<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, size_average<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>        super(DiceBCELoss, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bce_losss <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>BCEWithLogitsLoss()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, inputs, targets, smooth<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        BCE <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>bce_losss(inputs, targets)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        inputs <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(inputs)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># flatten label and prediction tensors</span>
+</span></span><span style="display:flex;"><span>        inputs <span style="color:#f92672">=</span> inputs<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        targets <span style="color:#f92672">=</span> targets<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        intersection <span style="color:#f92672">=</span> (inputs <span style="color:#f92672">*</span> targets)<span style="color:#f92672">.</span>sum()
+</span></span><span style="display:flex;"><span>        dice_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> (<span style="color:#ae81ff">2.</span><span style="color:#f92672">*</span>intersection <span style="color:#f92672">+</span> smooth)<span style="color:#f92672">/</span>(
+</span></span><span style="display:flex;"><span>            inputs<span style="color:#f92672">.</span>sum() <span style="color:#f92672">+</span> targets<span style="color:#f92672">.</span>sum() <span style="color:#f92672">+</span> smooth)
+</span></span><span style="display:flex;"><span>        Dice_BCE <span style="color:#f92672">=</span> BCE <span style="color:#f92672">+</span> dice_loss
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> Dice_BCE
+</span></span></code></pre></div><p><strong>IOU:</strong></p>
+<p>Here we will be using the intersection over union as a performance metric for each batch in the training datasets. It is used to detect if the image is segmented right and how perfectly the image is segmented.</p>
+<p>The IoU of a proposed set of object pixels and a set of true object pixels is calculated as:</p>
+<p><img loading="lazy" src="https://miro.medium.com/max/720/1*ijgBc4dCoyQuzCZhw0j5bw.png" alt="https://miro.medium.com/max/720/1*ijgBc4dCoyQuzCZhw0j5bw.png"  />
+</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">IOU</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, weight<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, size_average<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>):
+</span></span><span style="display:flex;"><span>        super(IOU, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, inputs, targets, smooth<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># comment out if your model contains a sigmoid or equivalent activation layer</span>
+</span></span><span style="display:flex;"><span>        inputs <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(inputs)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># flatten label and prediction tensors</span>
+</span></span><span style="display:flex;"><span>        inputs <span style="color:#f92672">=</span> inputs<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        targets <span style="color:#f92672">=</span> targets<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># intersection is equivalent to True Positive count</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># union is the mutually inclusive area of all labels &amp; predictions</span>
+</span></span><span style="display:flex;"><span>        intersection <span style="color:#f92672">=</span> (inputs <span style="color:#f92672">*</span> targets)<span style="color:#f92672">.</span>sum()
+</span></span><span style="display:flex;"><span>        total <span style="color:#f92672">=</span> (inputs <span style="color:#f92672">+</span> targets)<span style="color:#f92672">.</span>sum()
+</span></span><span style="display:flex;"><span>        union <span style="color:#f92672">=</span> total <span style="color:#f92672">-</span> intersection
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        IoU <span style="color:#f92672">=</span> (intersection <span style="color:#f92672">+</span> smooth)<span style="color:#f92672">/</span>(union <span style="color:#f92672">+</span> smooth)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> IoU
+</span></span></code></pre></div><h2 id="the-training-loop">The Training loop:<a hidden class="anchor" aria-hidden="true" href="#the-training-loop">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">save_checkpoint</span>(state, filename<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;resize.pth.tar&#34;</span>):
+</span></span><span style="display:flex;"><span>		<span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">			saves checkpoint for each epoch
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">		&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;=&gt; Saving checkpoint&#34;</span>)
+</span></span><span style="display:flex;"><span>    torch<span style="color:#f92672">.</span>save(state, filename)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> Deeplabv3Plus(num_classes<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>to(DEVICE)
+</span></span><span style="display:flex;"><span>loss_fn <span style="color:#f92672">=</span> DiceBCELoss()
+</span></span><span style="display:flex;"><span>iou_fn <span style="color:#f92672">=</span> IOU()
+</span></span><span style="display:flex;"><span>scaler <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>amp<span style="color:#f92672">.</span>GradScaler()
+</span></span><span style="display:flex;"><span>optimizer <span style="color:#f92672">=</span> optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters(), lr <span style="color:#f92672">=</span> LEARNING_RATE)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_iou <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>train_loss <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(NUM_EPOCHS):
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch: </span><span style="color:#e6db74">{</span>epoch<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{</span>NUM_EPOCHS<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    iterations <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    iter_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>    iter_iou <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    batch_loop <span style="color:#f92672">=</span> tqdm(train_loader)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> batch_idx,(data,targets) <span style="color:#f92672">in</span> enumerate(batch_loop):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> data<span style="color:#f92672">.</span>to(device <span style="color:#f92672">=</span> DEVICE)
+</span></span><span style="display:flex;"><span>        targets <span style="color:#f92672">=</span> targets<span style="color:#f92672">.</span>float()<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>to(device<span style="color:#f92672">=</span>DEVICE)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>amp<span style="color:#f92672">.</span>autocast():
+</span></span><span style="display:flex;"><span>            predictions <span style="color:#f92672">=</span> model(data)
+</span></span><span style="display:flex;"><span>            loss <span style="color:#f92672">=</span> loss_fn(predictions , targets)
+</span></span><span style="display:flex;"><span>            iou <span style="color:#f92672">=</span> iou_fn(predictions , targets)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            iter_loss <span style="color:#f92672">+=</span> loss<span style="color:#f92672">.</span>item()
+</span></span><span style="display:flex;"><span>            iter_iou <span style="color:#f92672">+=</span> iou<span style="color:#f92672">.</span>item()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>        scaler<span style="color:#f92672">.</span>scale(loss)<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>        scaler<span style="color:#f92672">.</span>step(optimizer)
+</span></span><span style="display:flex;"><span>        scaler<span style="color:#f92672">.</span>update()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        iterations <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span> 
+</span></span><span style="display:flex;"><span>        batch_loop<span style="color:#f92672">.</span>set_postfix(diceloss <span style="color:#f92672">=</span> loss<span style="color:#f92672">.</span>item(), iou <span style="color:#f92672">=</span> iou<span style="color:#f92672">.</span>item())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    train_loss<span style="color:#f92672">.</span>append(iter_loss <span style="color:#f92672">/</span> iterations)
+</span></span><span style="display:flex;"><span>    train_iou<span style="color:#f92672">.</span>append(iter_iou<span style="color:#f92672">/</span>iterations)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch: </span><span style="color:#e6db74">{</span>epoch<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{</span>NUM_EPOCHS<span style="color:#e6db74">}</span><span style="color:#e6db74">, Training loss: </span><span style="color:#e6db74">{</span>round(train_loss[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] , <span style="color:#ae81ff">3</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    checkpoint <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;state_dict&#34;</span> : model<span style="color:#f92672">.</span>state_dict(), 
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;optimizer&#34;</span> : optimizer<span style="color:#f92672">.</span>state_dict()
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    save_checkpoint(checkpoint)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    num_correct <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    num_pixels <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    dice_score <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> x, y <span style="color:#f92672">in</span> val_loader:
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>to(DEVICE)
+</span></span><span style="display:flex;"><span>            y <span style="color:#f92672">=</span> y<span style="color:#f92672">.</span>to(DEVICE)<span style="color:#f92672">.</span>unsqueeze(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            preds <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(model(x))
+</span></span><span style="display:flex;"><span>            preds <span style="color:#f92672">=</span> (preds <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.5</span>)<span style="color:#f92672">.</span>float()
+</span></span><span style="display:flex;"><span>            num_correct <span style="color:#f92672">+=</span> (preds <span style="color:#f92672">==</span> y)<span style="color:#f92672">.</span>sum()
+</span></span><span style="display:flex;"><span>            num_pixels <span style="color:#f92672">+=</span> torch<span style="color:#f92672">.</span>numel(preds)
+</span></span><span style="display:flex;"><span>            dice_score <span style="color:#f92672">+=</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (preds <span style="color:#f92672">*</span> y)<span style="color:#f92672">.</span>sum()) <span style="color:#f92672">/</span> (
+</span></span><span style="display:flex;"><span>                (preds <span style="color:#f92672">+</span> y)<span style="color:#f92672">.</span>sum() <span style="color:#f92672">+</span> <span style="color:#ae81ff">1e-8</span>
+</span></span><span style="display:flex;"><span>            )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    print(
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Got </span><span style="color:#e6db74">{</span>num_correct<span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{</span>num_pixels<span style="color:#e6db74">}</span><span style="color:#e6db74"> with acc </span><span style="color:#e6db74">{</span>num_correct<span style="color:#f92672">/</span>num_pixels<span style="color:#f92672">*</span><span style="color:#ae81ff">100</span><span style="color:#e6db74">:</span><span style="color:#e6db74">.2f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>    )
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Dice score: </span><span style="color:#e6db74">{</span>dice_score<span style="color:#f92672">/</span>len(val_loader)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>train()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">1</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">100</span><span style="color:#f92672">%|</span><span style="color:#960050;background-color:#1e0010">██████████</span><span style="color:#f92672">|</span> <span style="color:#ae81ff">2556</span><span style="color:#f92672">/</span><span style="color:#ae81ff">2556</span> [<span style="color:#ae81ff">22</span>:<span style="color:#ae81ff">30</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">00</span>,  <span style="color:#ae81ff">1.89</span>it<span style="color:#f92672">/</span>s, diceloss<span style="color:#f92672">=</span><span style="color:#ae81ff">0.108</span>, iou<span style="color:#f92672">=</span><span style="color:#ae81ff">0.902</span>]
+</span></span><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">1</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>, 
+</span></span><span style="display:flex;"><span>Training loss: <span style="color:#ae81ff">0.24</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">=&gt;</span> Saving checkpoint
+</span></span><span style="display:flex;"><span>Got <span style="color:#ae81ff">222509495</span><span style="color:#f92672">/</span><span style="color:#ae81ff">232243200</span> <span style="color:#66d9ef">with</span> acc <span style="color:#ae81ff">95.81</span>
+</span></span><span style="display:flex;"><span>Dice score: <span style="color:#ae81ff">0.9310375452041626</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">2</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">100</span><span style="color:#f92672">%|</span><span style="color:#960050;background-color:#1e0010">██████████</span><span style="color:#f92672">|</span> <span style="color:#ae81ff">2556</span><span style="color:#f92672">/</span><span style="color:#ae81ff">2556</span> [<span style="color:#ae81ff">22</span>:<span style="color:#ae81ff">33</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">00</span>,  <span style="color:#ae81ff">1.89</span>it<span style="color:#f92672">/</span>s, diceloss<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0504</span>, iou<span style="color:#f92672">=</span><span style="color:#ae81ff">0.943</span>]
+</span></span><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">2</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>, Training loss: <span style="color:#ae81ff">0.136</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">=&gt;</span> Saving checkpoint
+</span></span><span style="display:flex;"><span>Got <span style="color:#ae81ff">225145355</span><span style="color:#f92672">/</span><span style="color:#ae81ff">232243200</span> <span style="color:#66d9ef">with</span> acc <span style="color:#ae81ff">96.94</span>
+</span></span><span style="display:flex;"><span>Dice score: <span style="color:#ae81ff">0.9528669714927673</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">10</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">100</span><span style="color:#f92672">%|</span><span style="color:#960050;background-color:#1e0010">██████████</span><span style="color:#f92672">|</span> <span style="color:#ae81ff">2556</span><span style="color:#f92672">/</span><span style="color:#ae81ff">2556</span> [<span style="color:#ae81ff">22</span>:<span style="color:#ae81ff">33</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">00</span>:<span style="color:#ae81ff">00</span>,  <span style="color:#ae81ff">1.89</span>it<span style="color:#f92672">/</span>s, diceloss<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0361</span>, iou<span style="color:#f92672">=</span><span style="color:#ae81ff">0.972</span>]
+</span></span><span style="display:flex;"><span>Epoch: <span style="color:#ae81ff">10</span><span style="color:#f92672">/</span><span style="color:#ae81ff">10</span>, Training loss: <span style="color:#ae81ff">0.042</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">=&gt;</span> Saving checkpoint
+</span></span><span style="display:flex;"><span>Got <span style="color:#ae81ff">226039920</span><span style="color:#f92672">/</span><span style="color:#ae81ff">232243200</span> <span style="color:#66d9ef">with</span> acc <span style="color:#ae81ff">97.33</span>
+</span></span><span style="display:flex;"><span>Dice score: <span style="color:#ae81ff">0.9583981037139893</span>
+</span></span></code></pre></div><p><img loading="lazy" src="https://i.imgur.com/uPN9UrP.png" alt="Fig: BCEDice loss and iou over 10 epochs"  />
+</p>
+<pre><code>                        Fig: BCEDice loss and iou over 10 epochs
+</code></pre>
+<p>Entire training process can be found here:</p>
+<p><a href="https://www.kaggle.com/code/rajanghimire/segmentation-deeplabv3/notebook">Segmentation_Deeplabv3+</a></p>
+<h2 id="testing-our-model">Testing our model:<a hidden class="anchor" aria-hidden="true" href="#testing-our-model">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> models.deeplabv3plus <span style="color:#f92672">import</span> Deeplabv3Plus
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torchvision
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> cv2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> PIL <span style="color:#f92672">import</span> Image
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> albumentations <span style="color:#66d9ef">as</span> A
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> albumentations.pytorch <span style="color:#f92672">import</span> ToTensorV2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> Dataset, DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> models.deeplabv3plus <span style="color:#f92672">import</span> Deeplabv3Plus
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> copy <span style="color:#f92672">import</span> deepcopy
+</span></span><span style="display:flex;"><span>DEVICE <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cuda&#34;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#34;cpu&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">resize_with_aspect_ratio</span>(
+</span></span><span style="display:flex;"><span>    image, width<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, height<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, inter<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>INTER_AREA
+</span></span><span style="display:flex;"><span>):
+</span></span><span style="display:flex;"><span>    dim <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>    (h, w) <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape[:<span style="color:#ae81ff">2</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> width <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span> <span style="color:#f92672">and</span> height <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> image
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> width <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        r <span style="color:#f92672">=</span> height <span style="color:#f92672">/</span> float(h)
+</span></span><span style="display:flex;"><span>        dim <span style="color:#f92672">=</span> (int(w <span style="color:#f92672">*</span> r), height)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        r <span style="color:#f92672">=</span> width <span style="color:#f92672">/</span> float(w)
+</span></span><span style="display:flex;"><span>        dim <span style="color:#f92672">=</span> (width, int(h <span style="color:#f92672">*</span> r))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> cv2<span style="color:#f92672">.</span>resize(image, dim, interpolation<span style="color:#f92672">=</span>inter)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ImageDataset</span>(Dataset):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, images: np<span style="color:#f92672">.</span>ndarray, transform<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super(ImageDataset, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>transform <span style="color:#f92672">=</span> transform
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>images <span style="color:#f92672">=</span> images
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __len__(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> len(self<span style="color:#f92672">.</span>images)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __getitem__(self, index):
+</span></span><span style="display:flex;"><span>        image <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>images[index]
+</span></span><span style="display:flex;"><span>        image <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(image, cv2<span style="color:#f92672">.</span>COLOR_BGR2RGB)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>transform <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            augemantations <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>transform(image<span style="color:#f92672">=</span>image)
+</span></span><span style="display:flex;"><span>            image <span style="color:#f92672">=</span> augemantations[<span style="color:#e6db74">&#39;image&#39;</span>]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> image
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SegmentBackground</span>():
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, model_pth: str) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>transforms_ <span style="color:#f92672">=</span> A<span style="color:#f92672">.</span>Compose(
+</span></span><span style="display:flex;"><span>            [
+</span></span><span style="display:flex;"><span>                A<span style="color:#f92672">.</span>Normalize(
+</span></span><span style="display:flex;"><span>                    mean<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>, <span style="color:#ae81ff">0.0</span>],
+</span></span><span style="display:flex;"><span>                    std<span style="color:#f92672">=</span>[<span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>, <span style="color:#ae81ff">1.0</span>],
+</span></span><span style="display:flex;"><span>                    max_pixel_value<span style="color:#f92672">=</span><span style="color:#ae81ff">255.0</span>,
+</span></span><span style="display:flex;"><span>                ),
+</span></span><span style="display:flex;"><span>                A<span style="color:#f92672">.</span>Resize(<span style="color:#ae81ff">640</span>, <span style="color:#ae81ff">640</span>, p<span style="color:#f92672">=</span><span style="color:#ae81ff">1.0</span>),
+</span></span><span style="display:flex;"><span>                ToTensorV2(),
+</span></span><span style="display:flex;"><span>            ],)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model <span style="color:#f92672">=</span> Deeplabv3Plus(num_classes<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>to(DEVICE)
+</span></span><span style="display:flex;"><span>        state <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>load(model_pth, map_location<span style="color:#f92672">=</span>DEVICE)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model<span style="color:#f92672">.</span>load_state_dict(state[<span style="color:#e6db74">&#39;state_dict&#39;</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">blur_backgrond</span>(self, image, mask):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        mask <span style="color:#f92672">=</span> mask[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>cpu()<span style="color:#f92672">.</span>numpy()<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        new_mapp <span style="color:#f92672">=</span> deepcopy(mask)
+</span></span><span style="display:flex;"><span>        new_mapp[mask <span style="color:#f92672">==</span> <span style="color:#ae81ff">0.0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>        new_mapp[mask <span style="color:#f92672">==</span> <span style="color:#ae81ff">1.0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        orig_imginal <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(image)
+</span></span><span style="display:flex;"><span>        mapping_resized <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>resize(new_mapp,
+</span></span><span style="display:flex;"><span>                                     (orig_imginal<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>],
+</span></span><span style="display:flex;"><span>                                      orig_imginal<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]),
+</span></span><span style="display:flex;"><span>                                     Image<span style="color:#f92672">.</span>ANTIALIAS)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        mapping_resized <span style="color:#f92672">=</span> mapping_resized<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#34;uint8&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        blurred <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>GaussianBlur(mapping_resized, (<span style="color:#ae81ff">15</span>, <span style="color:#ae81ff">15</span>), sigmaX<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        _, thresholded_img <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>threshold(
+</span></span><span style="display:flex;"><span>            blurred, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">255</span>, cv2<span style="color:#f92672">.</span>THRESH_BINARY<span style="color:#f92672">+</span>cv2<span style="color:#f92672">.</span>THRESH_OTSU)
+</span></span><span style="display:flex;"><span>        mapping <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(thresholded_img, cv2<span style="color:#f92672">.</span>COLOR_GRAY2RGB)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        blurred_original_image <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>GaussianBlur(orig_imginal,
+</span></span><span style="display:flex;"><span>                                                  (<span style="color:#ae81ff">101</span>, <span style="color:#ae81ff">101</span>), <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>        layered_image <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>where(mapping <span style="color:#f92672">!=</span> (<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>),
+</span></span><span style="display:flex;"><span>                                 orig_imginal,
+</span></span><span style="display:flex;"><span>                                 blurred_original_image)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        cv2<span style="color:#f92672">.</span>imwrite(<span style="color:#e6db74">&#34;model_prediction/blurred.jpg&#34;</span> , resize_with_aspect_ratio(layered_image , <span style="color:#ae81ff">800</span>))
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Done!&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">segement</span>(self, image_paths):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        images_list <span style="color:#f92672">=</span> [cv2<span style="color:#f92672">.</span>imread(x) <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> image_paths]
+</span></span><span style="display:flex;"><span>        images <span style="color:#f92672">=</span> ImageDataset(images_list,
+</span></span><span style="display:flex;"><span>                              transform<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>transforms_)
+</span></span><span style="display:flex;"><span>        loader <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>DataLoader(
+</span></span><span style="display:flex;"><span>            images, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>        folder <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;model_prediction/&#34;</span>
+</span></span><span style="display:flex;"><span>        generated_mask <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> idx, img <span style="color:#f92672">in</span> enumerate(loader):
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>to(device<span style="color:#f92672">=</span>DEVICE)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>                preds <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>sigmoid(self<span style="color:#f92672">.</span>model(x))
+</span></span><span style="display:flex;"><span>                preds <span style="color:#f92672">=</span> (preds <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.5</span>)<span style="color:#f92672">.</span>float()
+</span></span><span style="display:flex;"><span>                generated_mask<span style="color:#f92672">.</span>append(preds)
+</span></span><span style="display:flex;"><span>            torchvision<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>save_image(
+</span></span><span style="display:flex;"><span>                preds, <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>folder<span style="color:#e6db74">}</span><span style="color:#e6db74">/pred_</span><span style="color:#e6db74">{</span>idx<span style="color:#e6db74">}</span><span style="color:#e6db74">.png&#34;</span>
+</span></span><span style="display:flex;"><span>            )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> img, mask <span style="color:#f92672">in</span> zip(images_list, generated_mask):
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>blur_backgrond(img, mask)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    image_path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;inference/test_images/lachlan-dempsey-6VPEOdpFNAs-unsplash.jpg&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># img = cv2.imread(image_path)</span>
+</span></span><span style="display:flex;"><span>    segmenter <span style="color:#f92672">=</span> SegmentBackground(<span style="color:#e6db74">&#34;resize.pth.tar&#34;</span>)
+</span></span><span style="display:flex;"><span>    segmenter<span style="color:#f92672">.</span>segement([image_path])
+</span></span></code></pre></div><h2 id="output">Output:<a hidden class="anchor" aria-hidden="true" href="#output">#</a></h2>
+<p><img loading="lazy" src="https://i.imgur.com/c5Eqxe3.jpeg" alt="image"  />
+</p>
+<p><img loading="lazy" src="https://i.imgur.com/2NGmwWc.jpeg" alt="girl (1).jpg"  />
+</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/computer-vison/">Computer Vison</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://R4j4n.github.io/blogs/posts/lora/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>LORA(Low Rank Adaptation) : A Deeper Dive</span>
+  </a>
+  <a class="next" href="https://R4j4n.github.io/blogs/posts/vit/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Vision Transformer (ViT)</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

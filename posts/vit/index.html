@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Vision Transformer (ViT) | Rajan Ghimire</title>
+<meta name="keywords" content="Computer Vison, PyTorch">
+<meta name="description" content="ViT from scratch in pytorch">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/vit/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="Vision Transformer (ViT)" />
+<meta property="og:description" content="ViT from scratch in pytorch" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/vit/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-02-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-02-06T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Vision Transformer (ViT)"/>
+<meta name="twitter:description" content="ViT from scratch in pytorch"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Vision Transformer (ViT)",
+      "item": "https://R4j4n.github.io/blogs/posts/vit/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Vision Transformer (ViT)",
+  "name": "Vision Transformer (ViT)",
+  "description": "ViT from scratch in pytorch",
+  "keywords": [
+    "Computer Vison", "PyTorch"
+  ],
+  "articleBody": " Transformers were widely used in the field of natural language processing when they were first developed. Many researchers have begun using the Transformer architecture in other domains, like computer vision, as a result of Transformers’ success in the field of Natural Language Processing (NLP). One such architecture, called the Vision Transformer, was developed by Google Research and Brain Team to tackle the challenge of image classification. Naturally, you must have prior knowledge of how Transformers function and the issues it addressed in order to grasp how ViT operates. Before delving into the specifics of the ViT, I’ll briefly explain how transformers function. If you already understand Transformers, feel free to skip ahead to the next section\nVanilla Transformer: Previously Recurrent Neural Network (RNN) and LSTM were widely used in Natural Language Processing tasks like next word prediction, machine translation, text generation and more. One of the biggest issues with these RNNs, is that they make use of sequential computation. For example: Suppose, we are translating word “How are you?” to any other language. In order for your code to process the word “you”, it has to first go through “are” and then “you”. And two other issues with RNNs are:\nLoss of information: For example, it is harder to keep track of whether the subject is singular or plural as you move further away from the subject. Vanishing Gradient: when you back-propagate, the gradients can become really small and as a result, your model will not be learning much To overcome the problem of RNNs, The Transformer was introduced. Transformers are based on attention and don’t require any sequential computation per layer, only a single step is needed. The attention is word-to-word mechanism i.e. the attention mechanism finds how much a word in a sentence is related to all words in the sentence, including the word analyzed with itself. Finally, transformers don’t suffer from vanishing gradients problems that are related to the length of the sequences.\nUnderstanding the Transformer Encoder: Step 1: Input Embedding\nFirst layer in Transformer is the embedding layer. This sub-layer converts the input tokens tokenized by the tokenizer into the vectors of dimension 512. Neural networks learn through numbers so each word must be mapped to a vector with continuous values to represent that word.\nStep 2: Positional Encoding\nPosition and order of words in a sentence is vital because position of words in sentence defines the grammar and actual semantics of sentence. Recurrent Neural Network take the order of the word into account as they take a sentence word by word in a sequential order. So, we must input some positional information to the embeddings form the first layer as each word in a sentence simultaneously flows through the Transformer encoder / decoder. The model doesn’t have any sense of order/sequence of each word. To incorporate the order of the word, the concept of positional encoding is used. The positional encoding is done using the sine and the cosine function.\nStep 3: Multi-Headed Attention\nMulti Head attention is the key feature of the transformer. It is the layer that applies mechanism of Self-attention. Attention is a means of selectively weighting different elements in input data, so that they will have an adjusted impact on the hidden states of downstream layers. The attention mechanisms allow a decoder, while it is generating an output word, to focus more on relevant words or hidden states within the network, and focus less on irrelevant information. To achieve self-attention, the positional input embedding is fed into 3 distinct fully connected layers to form query(Q), key(k) and value(V) vectors. Here for Example of query is search text on YouTube or google, key is the video title or article title searched for associated with the query text. Now the query and key undergo dot product multiplication (QKT) to get the score matrix where highest scores are obtained for those words which are to be given more attention in search. Now, scores are scaled down by dividing it by square root of dimensions of queries and keys (√dk). This is done to have more stable gradients, as multiplying values can have exploding gradient problem. Now we have scaled scores. Now, SoftMax is applied to scaled scores to get probability between 0 to 1 for each word, the higher probability words will get more attention and lesser values will be ignored. Now the matrix after SoftMax is multiplied with value(V) vector. The higher SoftMax will keep the value of word which the model thinks if of higher relevance and Lower scores will be termed as irrelevant. Now the final output matrix is applied to linear layer to perform further processing. Computing Multi-Head attention: To make this a multi-headed attention computation the query, key, and value into are split into N vectors before applying self-attention. The split vectors then go through the self-attention process individually. Each self-attention process is called a head. The dimensionality of each head is ‘d_k’ is ( embedding_dim / h) where h is number of heads. Each head produces an output vector that gets concatenated into a single vector before going through the final linear layer. Step 4: The Residual Connections, Layer Normalization, and Feed Forward Network The output of multi-head attention is added to original positional input embedding. This is called Residual connection. The idea behind residual connection is learning what’s left of (residual), without learning the new representation. The output of residual is applied to Layer Normalization. Here we perform layer normalization in order to prevent the values of output from becoming bigger. We have performed a lot of operations which may cause the values of the layer output to become bigger. So, we use layer normalization to normalize back again. The output of layer normalization is applied to a feed forward network. The feed forward network consists of a couple of linear layers with Relu activation in between. Point-wise feed forward is used to further process the attention output and giving it a weighted representation.\nThe Vison Transformer:\nWe are finally prepared to tackle vision transformers now that we have thoroughly explored the internal operation of transformers.\nApplying Transformers on images is a challeng for the following reasons:\nImages convey significantly more information than words, phrases, or paragraphs do, primarily in the form of pixels. Even with current hardware, it would be incredibly challenging to focus on every single pixel in the image. Instead, using localized focus was a well-liked substitute. In fact CNNs do something very similar through convolutions and the receptive field essentially grows bigger as we go deeper into the model’s layers, but Tranformers were always going to be computationally more expensive The general architecture can be easily explained in the following five easy steps:\nSplit images into patches. Obtain the Patch Embeddings, also known as the linear embeddings (representation) from each patch. Each of the Patch Embeddings should have position embeddings and a [cls] token. Get the output values for each of the [cls] tokens by passing each one through a Transformer Encoder. To obtain final class predictions, run the representations of [cls] tokens through an MLP Head. Step 1 and Step 2: PatchEmbedding Splitting an image into fixed-size patches and then linearly embedding each one of them using a linear projection layer is one method we use to obtain patch embeddings from an input image.\nHowever, by employing the 2D Convolution procedure, it is actually possible to combine the two stages into a single step. If we set the the number of out_channels to 768, and both kernel_size \u0026 stride to 16, once we perform the convolution operation (where the 2-D Convolution has kernel size 3 x 16 x 16), we can get the Patch Embeddings matrix of size 196 x 768 like below: source\n# input image `B, C, H, W` x = torch.randn(1, 3, 224, 224) # 2D conv conv = nn.Conv2d(3, 768, 16, 16) conv(x).reshape(-1, 196).transpose(0,1).shape \u003e\u003e torch.Size([196, 768]) class PatchEmbedding(nn.Module): \"\"\" Image to Patch Embedding \"\"\" def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768): super().__init__() img_size = tuple([img_size,img_size]) patch_size = tuple([patch_size, patch_size]) num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0]) self.img_size = img_size self.patch_size = patch_size self.num_patches = num_patches self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size) def forward(self, x): B, C, H, W = x.shape assert H == self.img_size[0] and W == self.img_size[1], \\ f\"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]}).\" x = self.proj(x).flatten(2).transpose(1, 2) return x Step 3: CLS TOKEN \u0026 Positional Encoding One of the interesting things about the Vision Transformer is that the architecture uses Class Tokens.These Class Tokens are randomly initialized tokens that are prepended to the beginning of your input sequence. The class token has the role of capturing information about the other tokens.\nSince the token is randomly initialized, it doesn’t have any meaningful data on it by itself. The deeper and more layered the Transformer is,the more information the Class Token can gather from the other tokens in the sequence.\nWhen the Vision Transformer completes the sequence’s final classification, it utilizes an MLP head that only considers information from the Class Token of the last layer and no other information. The Class Token appears to be a placeholder data structure that is used to store information that is gleaned from other tokens in the sequence. [cls] token is a vector of size 1 x 768\nThe positional information of each word within the input sequence is often attempted to be encoded when using transformers to create language models. Each word has a positional encoding that indicates where it should be in the sentence. The Vision Transformer does the same thing by adding a positional encoding to every patch. The top left patch represents the first token, and the bottom right patch represents the last token. The position embedding is just a tensor of shape $(batchsize,num of patch + 1, embedding size)$ that is added to the projected patches.\nso, adding [CLS] token and Positional Encoding to the PatchEmbed class:\nclass PatchEmbedding(nn.Module): \"\"\" Image to Patch Embedding + cls token + positonal encoding \"\"\" def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768): super().__init__() img_size = tuple([img_size,img_size]) patch_size = tuple([patch_size, patch_size]) num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0]) self.img_size = img_size self.patch_size = patch_size self.num_patches = num_patches self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size) # [cls] token self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim)) # positional encoding self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim)) def forward(self, x): B, C, H, W = x.shape assert H == self.img_size[0] and W == self.img_size[1], \\ f\"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]}).\" x = self.proj(x).flatten(2).transpose(1, 2) # Add CLS token to the patch embeddings cls_tokens = self.cls_token.expand(B, -1, -1) x = torch.cat((cls_tokens, x), dim=1) # Adding POS emmbedding x += self.pos_embed return x Step 4: Transformer Encoder Attention Block\nclass Attention(nn.Module): def __init__(self, dim = 768, num_heads=8, qkv_bias=False, qk_scale=None, dropout=0., proj_drop=0.): super().__init__() self.num_heads = num_heads head_dim = dim // num_heads # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights self.scale = qk_scale or head_dim ** -0.5 self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias) self.attn_drop = nn.Dropout(dropout) self.proj = nn.Linear(dim, dim) self.proj_drop = nn.Dropout(proj_drop) def forward(self, x): B, N, C = x.shape qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4) q, k, v = qkv[0], qkv[1], qkv[2] # make torchscript happy (cannot use tensor as tuple) attn = (q @ k.transpose(-2, -1)) * self.scale attn = attn.softmax(dim=-1) attn = self.attn_drop(attn) x = (attn @ v).transpose(1, 2).reshape(B, N, C) x = self.proj(x) x = self.proj_drop(x) return x Multi-Layer Perceptron Block\nclass MLP(nn.Sequential): def __init__(self, emb_size: int, L: int = 4, drop_p: float = 0.): super().__init__( nn.Linear(emb_size, L * emb_size), nn.GELU(), nn.Dropout(drop_p), nn.Linear(L * emb_size, emb_size), ) Encoder Block\nclass TransformerEncoderBlock(nn.Module): def __init__(self,emb_size: int = 768, drop_p: float = 0., forward_expansion: int = 4,forward_drop_p: float = 0., attn_drp: float = 0.): super().__init__() self.attention = Attention(dim = emb_size, num_heads=8, qkv_bias=False, qk_scale=None, dropout=attn_drp, proj_drop=0.) self.mlp = MLP(emb_size, L=forward_expansion, drop_p=forward_drop_p) self.drp_out = nn.Dropout(drop_p) if drop_p \u003e 0. else nn.Identity() self.layer_norm_1 = nn.LayerNorm(emb_size) self.layer_norm_2 = nn.LayerNorm(emb_size) def forward(self,x): x = x + self.drp_out(self.attention(self.layer_norm_1(x))) x = x + self.drp_out(self.mlp(self.layer_norm_2(x))) return x Wrapping all:\nclass TransformerEncoder(nn.Sequential): def __init__(self, depth: int = 12, **kwargs): super().__init__(*[TransformerEncoderBlock(**kwargs) for _ in range(depth)]) Step 5: The classification Head and VIT: class ClassificationHead(nn.Sequential): def __init__(self, emb_size: int = 768, n_classes: int = 1000): super().__init__( Reduce('b n e -\u003e b e', reduction='mean'), nn.LayerNorm(emb_size), nn.Linear(emb_size, n_classes)) class ViT(nn.Sequential): def __init__(self, in_channels: int = 3, patch_size: int = 16, emb_size: int = 768, img_size: int = 224, depth: int = 12, n_classes: int = 1000, **kwargs): super().__init__( PatchEmbedding(in_channels, patch_size, emb_size, img_size), TransformerEncoder(depth, emb_size=emb_size, **kwargs), ClassificationHead(emb_size, n_classes) ) Using ViT on custom dataset. Requirements:\neinops==0.6.1 matplotlib==3.6.3 Pillow==9.3.0 torch==1.13.1 torchvision==0.14.1 Downloading the dataset. For this demo i am going to use Cassava Leaf Disease Classification. In order to download the dataset, Navigate to your Kaggle profile and download the kaggle.json. Place the json file in the projects directory.\nimport opendatasets as od data_set_url = \"https://www.kaggle.com/competitions/cassava-leaf-disease-classification/data\" od.download(data_set_url) # Import libraries import os import cv2 import time import json import copy import pandas as pd import albumentations as albu import matplotlib.pyplot as plt import albumentations as albu import torch import torch.nn as nn from albumentations.pytorch import ToTensorV2 from torch.utils.data import Dataset, DataLoader from sklearn.model_selection import train_test_split BASE_DIR=\"cassava-leaf-disease-classification/\" TRAIN_IMAGES_DIR=os.path.join(BASE_DIR,'train_images') train_df=pd.read_csv(os.path.join(BASE_DIR,'train.csv')) train_df.head() print(\"Count of training images {0}\".format(len(os.listdir(TRAIN_IMAGES_DIR)))) Count of training images 21397 with open(f'{BASE_DIR}/label_num_to_disease_map.json', 'r') as f: name_mapping = json.load(f) name_mapping = {int(k): v for k, v in name_mapping.items()} train_df[\"class_id\"]=train_df[\"label\"].map(name_mapping) name_mapping {0: 'Cassava Bacterial Blight (CBB)', 1: 'Cassava Brown Streak Disease (CBSD)', 2: 'Cassava Green Mottle (CGM)', 3: 'Cassava Mosaic Disease (CMD)', 4: 'Healthy'} Visualization Utils\ndef visualize_images(image_ids,labels): plt.figure(figsize=(16,12)) for ind,(image_id,label) in enumerate(zip(image_ids,labels)): plt.subplot(3,3,ind+1) image=cv2.imread(os.path.join(TRAIN_IMAGES_DIR,image_id)) image=cv2.cvtColor(image,cv2.COLOR_BGR2RGB) plt.imshow(image) plt.title(f\"Class: {label}\",fontsize=12) plt.axis(\"off\") plt.show() def plot_augmentation(image_id,transform): plt.figure(figsize=(16,4)) img=cv2.imread(os.path.join(TRAIN_IMAGES_DIR,image_id)) img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB) plt.subplot(1,3,1) plt.imshow(img) plt.axis(\"off\") plt.subplot(1,3,2) x=transform(image=img)[\"image\"] plt.imshow(x) plt.axis(\"off\") plt.subplot(1,3,3) x=transform(image=img)[\"image\"] plt.imshow(x) plt.axis(\"off\") plt.show() def visualize(images, transform): \"\"\" Plot images and their transformations \"\"\" fig = plt.figure(figsize=(32, 16)) for i, im in enumerate(images): ax = fig.add_subplot(2, 5, i + 1, xticks=[], yticks=[]) plt.imshow(im) for i, im in enumerate(images): ax = fig.add_subplot(2, 5, i + 6, xticks=[], yticks=[]) plt.imshow(transform(image=im)['image']) Dataloader\n# DataSet class class CassavaDataset(Dataset): def __init__(self,df:pd.DataFrame,imfolder:str,train:bool = True, transforms=None): self.df=df self.imfolder=imfolder self.train=train self.transforms=transforms def __getitem__(self,index): im_path=os.path.join(self.imfolder,self.df.iloc[index]['image_id']) x=cv2.imread(im_path,cv2.IMREAD_COLOR) x=cv2.cvtColor(x,cv2.COLOR_BGR2RGB) if(self.transforms): x=self.transforms(image=x)['image'] if(self.train): y=self.df.iloc[index]['label'] return x,y else: return x def __len__(self): return len(self.df) Transformations\ntrain_augs = albu.Compose([ albu.RandomResizedCrop(height=384, width=384, p=1.0), albu.HorizontalFlip(p=0.5), albu.VerticalFlip(p=0.5), albu.RandomBrightnessContrast(p=0.5), albu.ShiftScaleRotate(p=0.5), albu.Normalize( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],), ToTensorV2(), ]) valid_augs = albu.Compose([ albu.Resize(height=384, width=384, p=1.0), albu.Normalize( mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],), ToTensorV2(), ]) train, valid = train_test_split( train_df, test_size=0.1, random_state=42, stratify=train_df.label.values ) # reset index on both dataframes train = train.reset_index(drop=True) valid = valid.reset_index(drop=True) train_targets = train.label.values # targets for validation valid_targets = valid.label.values train_dataset=CassavaDataset( df=train, imfolder=TRAIN_IMAGES_DIR, train=True, transforms=train_augs ) valid_dataset=CassavaDataset( df=valid, imfolder=TRAIN_IMAGES_DIR, train=True, transforms=valid_augs ) def plot_image(img_dict): image_tensor = img_dict[0] # print(type(image_tensor)) target = img_dict[1] print(target) plt.figure(figsize=(10, 10)) image = image_tensor.permute(1, 2, 0) plt.imshow(image) plot_image(train_dataset[23]) Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers). 3 train_loader = DataLoader( train_dataset, batch_size=32, num_workers=4, shuffle=True, ) valid_loader = DataLoader( valid_dataset, batch_size=32, num_workers=4, shuffle=False, ) Train and Valid pipeline\nfrom tqdm import tqdm def train_model(datasets, dataloaders, model, criterion, optimizer, scheduler, num_epochs, device): since = time.time() best_model_wts = copy.deepcopy(model.state_dict()) best_acc = 0.0 for epoch in range(num_epochs): print('Epoch {}/{}'.format(epoch, num_epochs-1)) print('-' * 10) for phase in ['train', 'valid']: if phase == 'train': model.train() else: model.eval() running_loss = 0.0 running_corrects = 0.0 train_bar = tqdm(dataloaders[phase], desc=f\"Training\") for _, (inputs, labels) in enumerate(train_bar): inputs = inputs.to(device) labels=labels.to(device) # Zero out the grads optimizer.zero_grad() # Forward # Track history in train mode with torch.set_grad_enabled(phase == 'train'): model=model.to(device) outputs = model(inputs) _, preds = torch.max(outputs, 1) loss = criterion(outputs, labels) if phase == 'train': loss.backward() optimizer.step() # Statistics running_loss += loss.item()*inputs.size(0) running_corrects += torch.sum(preds == labels.data) if phase == 'train': scheduler.step() epoch_loss = running_loss/len(datasets[phase]) epoch_acc = running_corrects.double()/len(datasets[phase]) print('{} Loss: {:.4f} Acc: {:.4f}'.format( phase, epoch_loss, epoch_acc)) if phase == 'valid' and epoch_acc \u003e best_acc: best_acc = epoch_acc best_model_wts = copy.deepcopy(model.state_dict()) print() time_elapsed = time.time()-since print('Training complete in {:.0f}m {:.0f}s'.format( time_elapsed // 60, time_elapsed % 60)) print('Best val Acc: {:4f}'.format(best_acc)) model.load_state_dict(best_model_wts) return model Loading our custom model. # importig our custom vit model from vit import VisionTransformer model = VisionTransformer(n_classes=len(name_mapping)) datasets={'train':train_dataset,'valid':valid_dataset} dataloaders={'train':train_loader,'valid':valid_loader} # device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\") device = \"cuda:1\" optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.001) scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1) criterion=nn.CrossEntropyLoss() num_epochs=5 from tqdm import tqdm def train_model(datasets, dataloaders, model, criterion, optimizer, scheduler, num_epochs, device): since = time.time() best_model_wts = copy.deepcopy(model.state_dict()) best_acc = 0.0 for epoch in range(num_epochs): print('Epoch {}/{}'.format(epoch, num_epochs-1)) print('-' * 10) for phase in ['train', 'valid']: if phase == 'train': model.train() else: model.eval() running_loss = 0.0 running_corrects = 0.0 train_bar = tqdm(dataloaders[phase], desc=f\"Training\") for _, (inputs, labels) in enumerate(train_bar): inputs = inputs.to(device) labels=labels.to(device) # Zero out the grads optimizer.zero_grad() # Forward # Track history in train mode with torch.set_grad_enabled(phase == 'train'): model=model.to(device) outputs = model(inputs) _, preds = torch.max(outputs, 1) loss = criterion(outputs, labels) if phase == 'train': loss.backward() optimizer.step() # Statistics running_loss += loss.item()*inputs.size(0) running_corrects += torch.sum(preds == labels.data) if phase == 'train': scheduler.step() epoch_loss = running_loss/len(datasets[phase]) epoch_acc = running_corrects.double()/len(datasets[phase]) print('{} Loss: {:.4f} Acc: {:.4f}'.format( phase, epoch_loss, epoch_acc)) if phase == 'valid' and epoch_acc \u003e best_acc: best_acc = epoch_acc best_model_wts = copy.deepcopy(model.state_dict()) print() time_elapsed = time.time()-since print('Training complete in {:.0f}m {:.0f}s'.format( time_elapsed // 60, time_elapsed % 60)) print('Best val Acc: {:4f}'.format(best_acc)) model.load_state_dict(best_model_wts) return model trained_model=train_model(datasets,dataloaders,model,criterion,optimizer,scheduler,num_epochs,device) Epoch 0/4 ---------- Training: 100%|██████████| 602/602 [06:41\u003c00:00, 1.50it/s] train Loss: 1.1578 Acc: 0.6166 Training: 100%|██████████| 67/67 [00:16\u003c00:00, 4.01it/s] valid Loss: 1.0497 Acc: 0.6364 Epoch 1/4 ---------- Training: 100%|██████████| 602/602 [06:40\u003c00:00, 1.50it/s] train Loss: 0.9603 Acc: 0.6489 Training: 100%|██████████| 67/67 [00:16\u003c00:00, 4.01it/s] valid Loss: 0.9217 Acc: 0.6593 Epoch 2/4 ---------- Training: 100%|██████████| 602/602 [06:41\u003c00:00, 1.50it/s] train Loss: 0.8384 Acc: 0.6853 Training: 100%|██████████| 67/67 [00:16\u003c00:00, 3.99it/s] valid Loss: 0.8747 Acc: 0.6860 Epoch 3/4 ---------- Training: 100%|██████████| 602/602 [06:44\u003c00:00, 1.49it/s] train Loss: 0.8154 Acc: 0.6935 Training: 100%|██████████| 67/67 [00:16\u003c00:00, 3.95it/s] valid Loss: 0.8452 Acc: 0.6921 Epoch 4/4 ---------- Training: 100%|██████████| 602/602 [06:45\u003c00:00, 1.49it/s] train Loss: 0.7929 Acc: 0.7020 Training: 100%|██████████| 67/67 [00:16\u003c00:00, 3.98it/s] valid Loss: 0.8299 Acc: 0.6981 Training complete in 34m 58s Best val Acc: 0.698131 torch.save(model.state_dict(), 'Custom.pt') References:\nhttps://amaarora.github.io/posts/2021-01-18-ViT.html https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632 https://medium.com/artificialis/vit-visiontransformer-a-pytorch-implementation-8d6a1033bdc5 https://medium.com/mlearning-ai/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c https://www.kaggle.com/code/abhinand05/vision-transformer-vit-tutorial-baseline ",
+  "wordCount" : "3021",
+  "inLanguage": "en",
+  "datePublished": "2023-02-06T00:00:00Z",
+  "dateModified": "2023-02-06T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/vit/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Vision Transformer (ViT)
+    </h1>
+    <div class="post-description">
+      ViT from scratch in pytorch
+    </div>
+    <div class="post-meta"><span title='2023-02-06 00:00:00 +0000 UTC'>February 6, 2023</span>&nbsp;·&nbsp;15 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul><ul>
+                <li>
+                    <a href="#step-1-and-step-2--patchembedding" aria-label="Step 1 and Step 2:  PatchEmbedding">Step 1 and Step 2:  PatchEmbedding</a></li>
+                <li>
+                    <a href="#step-3-cls-token--positional-encoding" aria-label="Step 3: CLS TOKEN &amp;amp; Positional Encoding">Step 3: CLS TOKEN &amp; Positional Encoding</a></li>
+                <li>
+                    <a href="#step-4-transformer-encoder" aria-label="Step 4: Transformer Encoder">Step 4: Transformer Encoder</a></li>
+                <li>
+                    <a href="#step-5-the-classification-head-and-vit" aria-label="Step 5: The classification Head and VIT:">Step 5: The classification Head and VIT:</a></li></ul>
+                    
+                <li>
+                    <a href="#using-vit-on-custom-dataset" aria-label="Using ViT on custom dataset.">Using ViT on custom dataset.</a><ul>
+                        
+                <li>
+                    <a href="#loading-our-custom-model" aria-label="Loading our custom model.">Loading our custom model.</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><img loading="lazy" src="https://www.xtrafondos.com/wallpapers/resized/optimus-prime-peleando-4937.jpg?s=large" alt=""  />
+</p>
+<p>Transformers were widely used in the field of natural language processing when they were first developed.  Many researchers have begun using the Transformer architecture in other domains, like computer vision, as a result of Transformers&rsquo; success in the field of Natural Language Processing (NLP). One such architecture, called the Vision Transformer, was developed by Google Research and Brain Team to tackle the challenge of image classification.
+Naturally, you must have prior knowledge of how Transformers function and the issues it addressed in order to grasp how ViT operates. Before delving into the specifics of the ViT, I&rsquo;ll briefly explain how transformers function.
+<em>If you already understand Transformers, feel free to skip ahead to the next section</em></p>
+<p><strong>Vanilla Transformer:</strong> <!-- raw HTML omitted --></p>
+<p>Previously Recurrent Neural Network (RNN) and LSTM were widely used in Natural Language Processing tasks like next word prediction, machine translation, text generation and more. One of the biggest issues with these RNNs, is that they make use of sequential computation. For example: Suppose, we are translating word “How are you?” to any other language. In order for your code to process the word &ldquo;you&rdquo;, it has to first go through &ldquo;are&rdquo; and then &ldquo;you&rdquo;. And two other issues with RNNs are:</p>
+<ul>
+<li>Loss of information: For example, it is harder to keep track of whether the subject is singular or plural as you move further away from the subject.</li>
+<li>Vanishing Gradient: when you back-propagate, the gradients can become really small and as a result, your model will not be learning much</li>
+</ul>
+<p>To overcome the problem of RNNs, The Transformer was introduced. Transformers are based on attention and don&rsquo;t require any sequential computation per layer, only a single step is needed. The attention is word-to-word mechanism i.e. the attention mechanism finds how much a word in a sentence is related to all words in the sentence, including the word analyzed with itself. Finally, transformers don&rsquo;t suffer from vanishing gradients problems that are related to the length of the sequences.</p>
+<p><strong>Understanding the Transformer Encoder:</strong><!-- raw HTML omitted -->
+<img loading="lazy" src="https://quantdare.com/wp-content/uploads/2021/11/transformer_arch.png" alt=""  />
+</p>
+<p><strong>Step 1:  Input Embedding</strong></p>
+<p>First layer in Transformer is the embedding layer. This sub-layer converts the input tokens tokenized by the tokenizer into the vectors of dimension 512. Neural networks learn through numbers so each word must be mapped to a vector with continuous values to represent that word.</p>
+<p><strong>Step 2: Positional Encoding</strong></p>
+<p>Position and order of words in a sentence is vital because position of words in sentence defines the grammar and actual semantics of sentence. Recurrent Neural Network take the order of the word into account as they take a sentence word by word in a sequential order. So, we must input some positional information to the embeddings form the first layer as each word in a sentence simultaneously flows through the Transformer encoder / decoder. The model doesn’t have any sense of order/sequence of each word. To incorporate the order of the word, the concept of positional encoding is used. The positional encoding is done using the sine and the cosine function.</p>
+<p><strong>Step 3: Multi-Headed Attention</strong></p>
+<p>Multi Head attention is the key feature of the transformer. It is the layer that applies mechanism of Self-attention. Attention is a means of selectively weighting different elements in input data, so that they will have an adjusted impact on the hidden states of downstream layers. The attention mechanisms allow a decoder, while it is generating an output word, to focus more on relevant words or hidden states within the network, and focus less on irrelevant information.
+To achieve self-attention, the positional input embedding is fed into 3 distinct fully connected layers to form query(Q), key(k) and value(V) vectors. Here for Example of query is search text on YouTube or google, key is the video title or article title searched for associated with the query text.
+Now the query and key undergo dot product multiplication (QKT) to get the score matrix where highest scores are obtained for those words which are to be given more attention in search. Now, scores are scaled down by dividing it by square root of dimensions of queries and keys (√dk). This is done to have more stable gradients, as multiplying values can have exploding gradient problem. Now we have scaled scores. Now, SoftMax is applied to scaled scores to get probability between 0 to 1 for each word, the higher probability words will get more attention and lesser values will be ignored.
+Now the matrix after SoftMax is multiplied with value(V) vector. The higher SoftMax will keep the value of word which the model thinks if of higher relevance and Lower scores will be termed as irrelevant. Now the final output matrix is applied to linear layer to perform further processing.<!-- raw HTML omitted -->
+<img loading="lazy" src="https://production-media.paperswithcode.com/methods/Screen_Shot_2020-07-08_at_12.17.05_AM_st5S0XV.png" alt=""  />
+</p>
+<p>Computing Multi-Head attention: <!-- raw HTML omitted -->
+To make this a multi-headed attention computation the query, key, and value into are split into N vectors before applying self-attention. The split vectors then go through the self-attention process individually. Each self-attention process is called a head. The dimensionality of each head is ‘d_k’ is ( embedding_dim / h) where h is number of heads. Each head produces an output vector that gets concatenated into a single vector before going through the final linear layer.
+<img loading="lazy" src="https://blog.scaleway.com/content/images/2019/08/atteq.jpeg" alt=""  />
+</p>
+<p><strong>Step 4: The Residual Connections, Layer Normalization, and Feed Forward Network</strong>
+The output of multi-head attention is added to original positional input embedding. This is called Residual connection. The idea behind residual connection is learning what’s left of (residual), without learning the new representation.
+The output of residual is applied to Layer Normalization. Here we perform layer normalization in order to prevent the values of output from becoming bigger. We have performed a lot of operations which may cause the values of the layer output to become bigger. So, we use layer normalization to normalize back again.
+The output of layer normalization is applied to a feed forward network. The feed forward network consists of a couple of linear layers with Relu activation in between. Point-wise feed forward is used to further process the attention output and giving it a weighted representation.</p>
+<p><strong>The Vison Transformer:</strong></p>
+<p><img loading="lazy" src="https://amaarora.github.io/images/ViT.png" alt=""  />
+</p>
+<p>We are finally prepared to tackle vision transformers now that we have thoroughly explored the internal operation of transformers.<!-- raw HTML omitted --></p>
+<p>Applying Transformers on images is a challeng for the following reasons:</p>
+<ul>
+<li>Images convey significantly more information than words, phrases, or paragraphs do, primarily in the form of pixels.</li>
+<li>Even with current hardware, it would be incredibly challenging to focus on every single pixel in the image.</li>
+<li>Instead, using localized focus was a well-liked substitute.</li>
+<li>In fact CNNs do something very similar through convolutions and the receptive field essentially grows bigger as we go deeper into the model&rsquo;s layers, but Tranformers were always going to be computationally more expensive</li>
+</ul>
+<p>The general architecture can be easily explained in the following five easy steps:</p>
+<ol>
+<li>Split images into patches.</li>
+<li>Obtain the Patch Embeddings, also known as the linear embeddings (representation) from each patch.</li>
+<li>Each of the Patch Embeddings should have position embeddings and a [cls] token.</li>
+<li>Get the output values for each of the [cls] tokens by passing each one through a Transformer Encoder.</li>
+<li>To obtain final class predictions, run the representations of [cls] tokens through an MLP Head.</li>
+</ol>
+<h3 id="step-1-and-step-2--patchembedding">Step 1 and Step 2:  PatchEmbedding<a hidden class="anchor" aria-hidden="true" href="#step-1-and-step-2--patchembedding">#</a></h3>
+<hr>
+<p>Splitting an image into fixed-size patches and then linearly embedding each one of them using a linear projection layer is one method we use to obtain patch embeddings from an input image.</p>
+<p><img loading="lazy" src="https://miro.medium.com/v2/resize:fit:1400/0*kEANaRaJkCPu685t" alt="Picture by paper authors (Alexey Dosovitskiy et al.)"  />
+</p>
+<p>However, by employing the 2D Convolution procedure, it is actually possible to combine the two stages into a single step.
+If we set the the number of out_channels to 768, and both kernel_size &amp; stride to 16, once we perform the convolution operation (where the 2-D Convolution has kernel size 3 x 16 x 16), we can get the Patch Embeddings matrix of size 196 x 768 like below: <a href="https://amaarora.github.io/2021/01/18/ViT.html#the-vision-transformer">source</a></p>
+<pre tabindex="0"><code># input image `B, C, H, W`
+x = torch.randn(1, 3, 224, 224)
+# 2D conv
+conv = nn.Conv2d(3, 768, 16, 16)
+conv(x).reshape(-1, 196).transpose(0,1).shape
+
+&gt;&gt; torch.Size([196, 768])
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PatchEmbedding</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34; Image to Patch Embedding
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, img_size<span style="color:#f92672">=</span><span style="color:#ae81ff">224</span>, patch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, in_chans<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, embed_dim<span style="color:#f92672">=</span><span style="color:#ae81ff">768</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        img_size <span style="color:#f92672">=</span> tuple([img_size,img_size])
+</span></span><span style="display:flex;"><span>        patch_size <span style="color:#f92672">=</span> tuple([patch_size, patch_size])
+</span></span><span style="display:flex;"><span>        num_patches <span style="color:#f92672">=</span> (img_size[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">//</span> patch_size[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">*</span> (img_size[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">//</span> patch_size[<span style="color:#ae81ff">0</span>])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>img_size <span style="color:#f92672">=</span> img_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>patch_size <span style="color:#f92672">=</span> patch_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>num_patches <span style="color:#f92672">=</span> num_patches
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(in_chans, embed_dim, kernel_size<span style="color:#f92672">=</span>patch_size, stride<span style="color:#f92672">=</span>patch_size)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        B, C, H, W <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>shape
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> H <span style="color:#f92672">==</span> self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">and</span> W <span style="color:#f92672">==</span> self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">1</span>], \
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Input image size (</span><span style="color:#e6db74">{</span>H<span style="color:#e6db74">}</span><span style="color:#e6db74">*</span><span style="color:#e6db74">{</span>W<span style="color:#e6db74">}</span><span style="color:#e6db74">) doesn&#39;t match model (</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">*</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">).&#34;</span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>proj(x)<span style="color:#f92672">.</span>flatten(<span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><h3 id="step-3-cls-token--positional-encoding">Step 3: CLS TOKEN &amp; Positional Encoding<a hidden class="anchor" aria-hidden="true" href="#step-3-cls-token--positional-encoding">#</a></h3>
+<hr>
+<p>One of the interesting things about the Vision Transformer is that the architecture uses Class Tokens.These Class Tokens are randomly initialized tokens that are prepended to the beginning of your input sequence. The class token has the role of capturing information about the other tokens.<!-- raw HTML omitted --></p>
+<p>Since the token is randomly initialized, it doesn&rsquo;t have any meaningful data on it by itself. The deeper and more layered the Transformer is,the more information the Class Token can gather from the other tokens in the sequence.<!-- raw HTML omitted --></p>
+<p>When the Vision Transformer completes the sequence&rsquo;s final classification, it utilizes an MLP head that only considers information from the Class Token of the last layer and no other information. The Class Token appears to be a placeholder data structure that is used to store information that is gleaned from other tokens in the sequence.<!-- raw HTML omitted -->
+<strong>[cls]</strong> token is a vector of size <strong>1 x 768</strong></p>
+<p><img loading="lazy" src="https://miro.medium.com/v2/resize:fit:828/0*F_igiisSnY9tUeAK" alt=""  />
+
+The positional information of each word within the input sequence is often attempted to be encoded when using transformers to create language models. Each word has a positional encoding that indicates where it should be in the sentence. The Vision Transformer does the same thing by adding a positional encoding to every patch. The top left patch represents the first token, and the bottom right patch represents the last token.
+The position embedding is just a tensor of shape $(batchsize,num of patch + 1, embedding size)$ that is added to the projected patches.</p>
+<p><img loading="lazy" src="https://amaarora.github.io/images/vit-03.png" alt=""  />
+</p>
+<p>so, adding [CLS] token and Positional Encoding to the <code>PatchEmbed</code> class:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">PatchEmbedding</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34; Image to Patch Embedding + cls token + positonal encoding
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, img_size<span style="color:#f92672">=</span><span style="color:#ae81ff">224</span>, patch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, in_chans<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, embed_dim<span style="color:#f92672">=</span><span style="color:#ae81ff">768</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        img_size <span style="color:#f92672">=</span> tuple([img_size,img_size])
+</span></span><span style="display:flex;"><span>        patch_size <span style="color:#f92672">=</span> tuple([patch_size, patch_size])
+</span></span><span style="display:flex;"><span>        num_patches <span style="color:#f92672">=</span> (img_size[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">//</span> patch_size[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">*</span> (img_size[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">//</span> patch_size[<span style="color:#ae81ff">0</span>])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>img_size <span style="color:#f92672">=</span> img_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>patch_size <span style="color:#f92672">=</span> patch_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>num_patches <span style="color:#f92672">=</span> num_patches
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(in_chans, embed_dim, kernel_size<span style="color:#f92672">=</span>patch_size, stride<span style="color:#f92672">=</span>patch_size)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># [cls] token</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>cls_token <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, embed_dim))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># positional encoding </span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pos_embed <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(<span style="color:#ae81ff">1</span>, num_patches <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, embed_dim))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        B, C, H, W <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>shape
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> H <span style="color:#f92672">==</span> self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">and</span> W <span style="color:#f92672">==</span> self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">1</span>], \
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Input image size (</span><span style="color:#e6db74">{</span>H<span style="color:#e6db74">}</span><span style="color:#e6db74">*</span><span style="color:#e6db74">{</span>W<span style="color:#e6db74">}</span><span style="color:#e6db74">) doesn&#39;t match model (</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">*</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>img_size[<span style="color:#ae81ff">1</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">).&#34;</span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>proj(x)<span style="color:#f92672">.</span>flatten(<span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Add CLS token to the patch embeddings</span>
+</span></span><span style="display:flex;"><span>        cls_tokens <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>cls_token<span style="color:#f92672">.</span>expand(B, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)  
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>cat((cls_tokens, x), dim<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Adding POS emmbedding </span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">+=</span> self<span style="color:#f92672">.</span>pos_embed
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><h3 id="step-4-transformer-encoder">Step 4: Transformer Encoder<a hidden class="anchor" aria-hidden="true" href="#step-4-transformer-encoder">#</a></h3>
+<p><strong>Attention Block</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Attention</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">768</span>, num_heads<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>, qkv_bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, qk_scale<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, dropout<span style="color:#f92672">=</span><span style="color:#ae81ff">0.</span>, proj_drop<span style="color:#f92672">=</span><span style="color:#ae81ff">0.</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>num_heads <span style="color:#f92672">=</span> num_heads
+</span></span><span style="display:flex;"><span>        head_dim <span style="color:#f92672">=</span> dim <span style="color:#f92672">//</span> num_heads
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>scale <span style="color:#f92672">=</span> qk_scale <span style="color:#f92672">or</span> head_dim <span style="color:#f92672">**</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">0.5</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>qkv <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(dim, dim <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>, bias<span style="color:#f92672">=</span>qkv_bias)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn_drop <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(dropout)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(dim, dim)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>proj_drop <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(proj_drop)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        B, N, C <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>shape
+</span></span><span style="display:flex;"><span>        qkv <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>qkv(x)<span style="color:#f92672">.</span>reshape(B, N, <span style="color:#ae81ff">3</span>, self<span style="color:#f92672">.</span>num_heads, C <span style="color:#f92672">//</span> self<span style="color:#f92672">.</span>num_heads)<span style="color:#f92672">.</span>permute(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">4</span>)
+</span></span><span style="display:flex;"><span>        q, k, v <span style="color:#f92672">=</span> qkv[<span style="color:#ae81ff">0</span>], qkv[<span style="color:#ae81ff">1</span>], qkv[<span style="color:#ae81ff">2</span>]   <span style="color:#75715e"># make torchscript happy (cannot use tensor as tuple)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        attn <span style="color:#f92672">=</span> (q <span style="color:#f92672">@</span> k<span style="color:#f92672">.</span>transpose(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)) <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>scale
+</span></span><span style="display:flex;"><span>        attn <span style="color:#f92672">=</span> attn<span style="color:#f92672">.</span>softmax(dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        attn <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>attn_drop(attn)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> (attn <span style="color:#f92672">@</span> v)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>reshape(B, N, C)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>proj(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>proj_drop(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p><strong>Multi-Layer Perceptron Block</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MLP</span>(nn<span style="color:#f92672">.</span>Sequential):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, emb_size: int, L: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>, drop_p: float <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Linear(emb_size, L <span style="color:#f92672">*</span> emb_size),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>GELU(),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Dropout(drop_p),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Linear(L <span style="color:#f92672">*</span> emb_size, emb_size),
+</span></span><span style="display:flex;"><span>        )
+</span></span></code></pre></div><p><strong>Encoder Block</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransformerEncoderBlock</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self,emb_size: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">768</span>, drop_p: float <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.</span>, forward_expansion: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>,forward_drop_p: float <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.</span>, attn_drp: float <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.</span>):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attention <span style="color:#f92672">=</span> Attention(dim <span style="color:#f92672">=</span> emb_size, num_heads<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>, qkv_bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, qk_scale<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, dropout<span style="color:#f92672">=</span>attn_drp, proj_drop<span style="color:#f92672">=</span><span style="color:#ae81ff">0.</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>mlp <span style="color:#f92672">=</span> MLP(emb_size, L<span style="color:#f92672">=</span>forward_expansion, drop_p<span style="color:#f92672">=</span>forward_drop_p)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>drp_out <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(drop_p) <span style="color:#66d9ef">if</span> drop_p <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.</span> <span style="color:#66d9ef">else</span> nn<span style="color:#f92672">.</span>Identity()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layer_norm_1 <span style="color:#f92672">=</span>  nn<span style="color:#f92672">.</span>LayerNorm(emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layer_norm_2 <span style="color:#f92672">=</span>  nn<span style="color:#f92672">.</span>LayerNorm(emb_size)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self,x):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>drp_out(self<span style="color:#f92672">.</span>attention(self<span style="color:#f92672">.</span>layer_norm_1(x)))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>drp_out(self<span style="color:#f92672">.</span>mlp(self<span style="color:#f92672">.</span>layer_norm_2(x)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p><strong>Wrapping all:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransformerEncoder</span>(nn<span style="color:#f92672">.</span>Sequential):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, depth: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>, <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(<span style="color:#f92672">*</span>[TransformerEncoderBlock(<span style="color:#f92672">**</span>kwargs) <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(depth)])
+</span></span></code></pre></div><h3 id="step-5-the-classification-head-and-vit">Step 5: The classification Head and VIT:<a hidden class="anchor" aria-hidden="true" href="#step-5-the-classification-head-and-vit">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ClassificationHead</span>(nn<span style="color:#f92672">.</span>Sequential):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, emb_size: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">768</span>, n_classes: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(
+</span></span><span style="display:flex;"><span>            Reduce(<span style="color:#e6db74">&#39;b n e -&gt; b e&#39;</span>, reduction<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;mean&#39;</span>),
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>LayerNorm(emb_size), 
+</span></span><span style="display:flex;"><span>            nn<span style="color:#f92672">.</span>Linear(emb_size, n_classes))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ViT</span>(nn<span style="color:#f92672">.</span>Sequential):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self,     
+</span></span><span style="display:flex;"><span>                in_channels: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>,
+</span></span><span style="display:flex;"><span>                patch_size: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>,
+</span></span><span style="display:flex;"><span>                emb_size: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">768</span>,
+</span></span><span style="display:flex;"><span>                img_size: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">224</span>,
+</span></span><span style="display:flex;"><span>                depth: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>,
+</span></span><span style="display:flex;"><span>                n_classes: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">**</span>kwargs):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__(
+</span></span><span style="display:flex;"><span>            PatchEmbedding(in_channels, patch_size, emb_size, img_size),
+</span></span><span style="display:flex;"><span>            TransformerEncoder(depth, emb_size<span style="color:#f92672">=</span>emb_size, <span style="color:#f92672">**</span>kwargs),
+</span></span><span style="display:flex;"><span>            ClassificationHead(emb_size, n_classes)
+</span></span><span style="display:flex;"><span>        )
+</span></span></code></pre></div><h2 id="using-vit-on-custom-dataset">Using ViT on custom dataset.<a hidden class="anchor" aria-hidden="true" href="#using-vit-on-custom-dataset">#</a></h2>
+<p>Requirements:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Python" data-lang="Python"><span style="display:flex;"><span>einops<span style="color:#f92672">==</span><span style="color:#ae81ff">0.6.1</span>
+</span></span><span style="display:flex;"><span>matplotlib<span style="color:#f92672">==</span><span style="color:#ae81ff">3.6.3</span>
+</span></span><span style="display:flex;"><span>Pillow<span style="color:#f92672">==</span><span style="color:#ae81ff">9.3.0</span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">==</span><span style="color:#ae81ff">1.13.1</span>
+</span></span><span style="display:flex;"><span>torchvision<span style="color:#f92672">==</span><span style="color:#ae81ff">0.14.1</span>
+</span></span></code></pre></div><p><strong>Downloading the dataset.</strong>  <!-- raw HTML omitted --></p>
+<p>For this demo i am going to use <a href="https://www.kaggle.com/competitions/cassava-leaf-disease-classification">Cassava Leaf Disease Classification</a>. In order to download the dataset, Navigate to your Kaggle profile and download the kaggle.json. Place the json file in the projects directory.</p>
+<p><img loading="lazy" src="/blogs/img/ViT/1.png" alt="kaggle Demo 1 "  />
+
+<img loading="lazy" src="/blogs/img/ViT/2.png" alt="kaggle Demo 2 "  />
+</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> opendatasets <span style="color:#66d9ef">as</span> od
+</span></span><span style="display:flex;"><span>data_set_url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;https://www.kaggle.com/competitions/cassava-leaf-disease-classification/data&#34;</span>
+</span></span><span style="display:flex;"><span>od<span style="color:#f92672">.</span>download(data_set_url)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Import libraries</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> cv2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> json
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> copy
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> pandas <span style="color:#66d9ef">as</span> pd
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> albumentations <span style="color:#66d9ef">as</span> albu
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#66d9ef">as</span> plt
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> albumentations <span style="color:#66d9ef">as</span> albu
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> albumentations.pytorch <span style="color:#f92672">import</span> ToTensorV2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> Dataset, DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.model_selection <span style="color:#f92672">import</span> train_test_split
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>BASE_DIR<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cassava-leaf-disease-classification/&#34;</span>
+</span></span><span style="display:flex;"><span>TRAIN_IMAGES_DIR<span style="color:#f92672">=</span>os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(BASE_DIR,<span style="color:#e6db74">&#39;train_images&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_df<span style="color:#f92672">=</span>pd<span style="color:#f92672">.</span>read_csv(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(BASE_DIR,<span style="color:#e6db74">&#39;train.csv&#39;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_df<span style="color:#f92672">.</span>head()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;Count of training images </span><span style="color:#e6db74">{0}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(len(os<span style="color:#f92672">.</span>listdir(TRAIN_IMAGES_DIR))))
+</span></span></code></pre></div><pre><code>Count of training images 21397
+</code></pre>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>BASE_DIR<span style="color:#e6db74">}</span><span style="color:#e6db74">/label_num_to_disease_map.json&#39;</span>, <span style="color:#e6db74">&#39;r&#39;</span>) <span style="color:#66d9ef">as</span> f:
+</span></span><span style="display:flex;"><span>    name_mapping <span style="color:#f92672">=</span> json<span style="color:#f92672">.</span>load(f)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>name_mapping <span style="color:#f92672">=</span> {int(k): v <span style="color:#66d9ef">for</span> k, v <span style="color:#f92672">in</span> name_mapping<span style="color:#f92672">.</span>items()}
+</span></span><span style="display:flex;"><span>train_df[<span style="color:#e6db74">&#34;class_id&#34;</span>]<span style="color:#f92672">=</span>train_df[<span style="color:#e6db74">&#34;label&#34;</span>]<span style="color:#f92672">.</span>map(name_mapping)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>name_mapping
+</span></span></code></pre></div><pre><code>{0: 'Cassava Bacterial Blight (CBB)',
+ 1: 'Cassava Brown Streak Disease (CBSD)',
+ 2: 'Cassava Green Mottle (CGM)',
+ 3: 'Cassava Mosaic Disease (CMD)',
+ 4: 'Healthy'}
+</code></pre>
+<p><strong>Visualization Utils</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">visualize_images</span>(image_ids,labels):
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">16</span>,<span style="color:#ae81ff">12</span>))
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> ind,(image_id,label) <span style="color:#f92672">in</span> enumerate(zip(image_ids,labels)):
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">3</span>,ind<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        image<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>imread(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(TRAIN_IMAGES_DIR,image_id))
+</span></span><span style="display:flex;"><span>        image<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>cvtColor(image,cv2<span style="color:#f92672">.</span>COLOR_BGR2RGB)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>imshow(image)
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>title(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Class: </span><span style="color:#e6db74">{</span>label<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>,fontsize<span style="color:#f92672">=</span><span style="color:#ae81ff">12</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#34;off&#34;</span>)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>show()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">plot_augmentation</span>(image_id,transform):
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">16</span>,<span style="color:#ae81ff">4</span>))
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    img<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>imread(os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(TRAIN_IMAGES_DIR,image_id))
+</span></span><span style="display:flex;"><span>    img<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>cvtColor(img,cv2<span style="color:#f92672">.</span>COLOR_BGR2RGB)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>imshow(img)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#34;off&#34;</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>    x<span style="color:#f92672">=</span>transform(image<span style="color:#f92672">=</span>img)[<span style="color:#e6db74">&#34;image&#34;</span>]
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>imshow(x)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#34;off&#34;</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>subplot(<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">3</span>,<span style="color:#ae81ff">3</span>)
+</span></span><span style="display:flex;"><span>    x<span style="color:#f92672">=</span>transform(image<span style="color:#f92672">=</span>img)[<span style="color:#e6db74">&#34;image&#34;</span>]
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>imshow(x)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>axis(<span style="color:#e6db74">&#34;off&#34;</span>)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>show()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">visualize</span>(images, transform):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    Plot images and their transformations
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    fig <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">16</span>))
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> i, im <span style="color:#f92672">in</span> enumerate(images):
+</span></span><span style="display:flex;"><span>        ax <span style="color:#f92672">=</span> fig<span style="color:#f92672">.</span>add_subplot(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">5</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, xticks<span style="color:#f92672">=</span>[], yticks<span style="color:#f92672">=</span>[])
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>imshow(im)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> i, im <span style="color:#f92672">in</span> enumerate(images):
+</span></span><span style="display:flex;"><span>        ax <span style="color:#f92672">=</span> fig<span style="color:#f92672">.</span>add_subplot(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">5</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>, xticks<span style="color:#f92672">=</span>[], yticks<span style="color:#f92672">=</span>[])
+</span></span><span style="display:flex;"><span>        plt<span style="color:#f92672">.</span>imshow(transform(image<span style="color:#f92672">=</span>im)[<span style="color:#e6db74">&#39;image&#39;</span>])
+</span></span></code></pre></div><p><strong>Dataloader</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># DataSet class</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CassavaDataset</span>(Dataset):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self,df:pd<span style="color:#f92672">.</span>DataFrame,imfolder:str,train:bool <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>, transforms<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>df<span style="color:#f92672">=</span>df
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>imfolder<span style="color:#f92672">=</span>imfolder
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>train<span style="color:#f92672">=</span>train
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>transforms<span style="color:#f92672">=</span>transforms
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __getitem__(self,index):
+</span></span><span style="display:flex;"><span>        im_path<span style="color:#f92672">=</span>os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(self<span style="color:#f92672">.</span>imfolder,self<span style="color:#f92672">.</span>df<span style="color:#f92672">.</span>iloc[index][<span style="color:#e6db74">&#39;image_id&#39;</span>])
+</span></span><span style="display:flex;"><span>        x<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>imread(im_path,cv2<span style="color:#f92672">.</span>IMREAD_COLOR)
+</span></span><span style="display:flex;"><span>        x<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>cvtColor(x,cv2<span style="color:#f92672">.</span>COLOR_BGR2RGB)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(self<span style="color:#f92672">.</span>transforms):
+</span></span><span style="display:flex;"><span>            x<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>transforms(image<span style="color:#f92672">=</span>x)[<span style="color:#e6db74">&#39;image&#39;</span>]
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(self<span style="color:#f92672">.</span>train):
+</span></span><span style="display:flex;"><span>            y<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>df<span style="color:#f92672">.</span>iloc[index][<span style="color:#e6db74">&#39;label&#39;</span>]
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> x,y
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __len__(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> len(self<span style="color:#f92672">.</span>df)
+</span></span></code></pre></div><p><strong>Transformations</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train_augs <span style="color:#f92672">=</span> albu<span style="color:#f92672">.</span>Compose([
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>RandomResizedCrop(height<span style="color:#f92672">=</span><span style="color:#ae81ff">384</span>, width<span style="color:#f92672">=</span><span style="color:#ae81ff">384</span>, p<span style="color:#f92672">=</span><span style="color:#ae81ff">1.0</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>HorizontalFlip(p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>VerticalFlip(p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>RandomBrightnessContrast(p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>ShiftScaleRotate(p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>Normalize(    
+</span></span><span style="display:flex;"><span>        mean<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.485</span>, <span style="color:#ae81ff">0.456</span>, <span style="color:#ae81ff">0.406</span>],
+</span></span><span style="display:flex;"><span>        std<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.229</span>, <span style="color:#ae81ff">0.224</span>, <span style="color:#ae81ff">0.225</span>],),
+</span></span><span style="display:flex;"><span>    ToTensorV2(),
+</span></span><span style="display:flex;"><span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>valid_augs <span style="color:#f92672">=</span> albu<span style="color:#f92672">.</span>Compose([
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>Resize(height<span style="color:#f92672">=</span><span style="color:#ae81ff">384</span>, width<span style="color:#f92672">=</span><span style="color:#ae81ff">384</span>, p<span style="color:#f92672">=</span><span style="color:#ae81ff">1.0</span>),
+</span></span><span style="display:flex;"><span>    albu<span style="color:#f92672">.</span>Normalize(
+</span></span><span style="display:flex;"><span>        mean<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.485</span>, <span style="color:#ae81ff">0.456</span>, <span style="color:#ae81ff">0.406</span>],
+</span></span><span style="display:flex;"><span>        std<span style="color:#f92672">=</span>[<span style="color:#ae81ff">0.229</span>, <span style="color:#ae81ff">0.224</span>, <span style="color:#ae81ff">0.225</span>],),
+</span></span><span style="display:flex;"><span>    ToTensorV2(),
+</span></span><span style="display:flex;"><span>])
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train, valid <span style="color:#f92672">=</span> train_test_split(
+</span></span><span style="display:flex;"><span>    train_df, 
+</span></span><span style="display:flex;"><span>    test_size<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>, 
+</span></span><span style="display:flex;"><span>    random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">42</span>,
+</span></span><span style="display:flex;"><span>    stratify<span style="color:#f92672">=</span>train_df<span style="color:#f92672">.</span>label<span style="color:#f92672">.</span>values
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># reset index on both dataframes</span>
+</span></span><span style="display:flex;"><span>train <span style="color:#f92672">=</span> train<span style="color:#f92672">.</span>reset_index(drop<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>valid <span style="color:#f92672">=</span> valid<span style="color:#f92672">.</span>reset_index(drop<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_targets <span style="color:#f92672">=</span> train<span style="color:#f92672">.</span>label<span style="color:#f92672">.</span>values
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># targets for validation</span>
+</span></span><span style="display:flex;"><span>valid_targets <span style="color:#f92672">=</span> valid<span style="color:#f92672">.</span>label<span style="color:#f92672">.</span>values
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train_dataset<span style="color:#f92672">=</span>CassavaDataset(
+</span></span><span style="display:flex;"><span>    df<span style="color:#f92672">=</span>train,
+</span></span><span style="display:flex;"><span>    imfolder<span style="color:#f92672">=</span>TRAIN_IMAGES_DIR,
+</span></span><span style="display:flex;"><span>    train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">=</span>train_augs
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>valid_dataset<span style="color:#f92672">=</span>CassavaDataset(
+</span></span><span style="display:flex;"><span>    df<span style="color:#f92672">=</span>valid,
+</span></span><span style="display:flex;"><span>    imfolder<span style="color:#f92672">=</span>TRAIN_IMAGES_DIR,
+</span></span><span style="display:flex;"><span>    train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">=</span>valid_augs
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">plot_image</span>(img_dict):
+</span></span><span style="display:flex;"><span>    image_tensor <span style="color:#f92672">=</span> img_dict[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#     print(type(image_tensor))</span>
+</span></span><span style="display:flex;"><span>    target <span style="color:#f92672">=</span> img_dict[<span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>    print(target)
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>figure(figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>    image <span style="color:#f92672">=</span> image_tensor<span style="color:#f92672">.</span>permute(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0</span>) 
+</span></span><span style="display:flex;"><span>    plt<span style="color:#f92672">.</span>imshow(image)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>plot_image(train_dataset[<span style="color:#ae81ff">23</span>])
+</span></span></code></pre></div><pre><code>Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+3
+</code></pre>
+<p><img loading="lazy" src="/blogs/img/ViT/training_15_2.png" alt="Dataloder"  />
+</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train_loader <span style="color:#f92672">=</span> DataLoader(
+</span></span><span style="display:flex;"><span>    train_dataset,
+</span></span><span style="display:flex;"><span>    batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>,
+</span></span><span style="display:flex;"><span>    num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>,
+</span></span><span style="display:flex;"><span>    shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>valid_loader <span style="color:#f92672">=</span> DataLoader(
+</span></span><span style="display:flex;"><span>    valid_dataset,
+</span></span><span style="display:flex;"><span>    batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">32</span>,
+</span></span><span style="display:flex;"><span>    num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>,
+</span></span><span style="display:flex;"><span>    shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p><strong>Train and Valid pipeline</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> tqdm <span style="color:#f92672">import</span> tqdm
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train_model</span>(datasets, dataloaders, model, criterion, optimizer, scheduler, num_epochs, device):
+</span></span><span style="display:flex;"><span>    since <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    best_model_wts <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(model<span style="color:#f92672">.</span>state_dict())
+</span></span><span style="display:flex;"><span>    best_acc <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(num_epochs):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Epoch </span><span style="color:#e6db74">{}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(epoch, num_epochs<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;-&#39;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> phase <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#39;train&#39;</span>, <span style="color:#e6db74">&#39;valid&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                model<span style="color:#f92672">.</span>train()
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            running_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>            running_corrects <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            train_bar <span style="color:#f92672">=</span> tqdm(dataloaders[phase], desc<span style="color:#f92672">=</span><span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Training&#34;</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> _, (inputs, labels) <span style="color:#f92672">in</span> enumerate(train_bar):
+</span></span><span style="display:flex;"><span>                inputs <span style="color:#f92672">=</span> inputs<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>                labels<span style="color:#f92672">=</span>labels<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Zero out the grads</span>
+</span></span><span style="display:flex;"><span>                optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Forward</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Track history in train mode</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>set_grad_enabled(phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>):
+</span></span><span style="display:flex;"><span>                    model<span style="color:#f92672">=</span>model<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>                    outputs <span style="color:#f92672">=</span> model(inputs)
+</span></span><span style="display:flex;"><span>                    _, preds <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>max(outputs, <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>                    loss <span style="color:#f92672">=</span> criterion(outputs, labels)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                        loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>                        optimizer<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Statistics</span>
+</span></span><span style="display:flex;"><span>                running_loss <span style="color:#f92672">+=</span> loss<span style="color:#f92672">.</span>item()<span style="color:#f92672">*</span>inputs<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>                running_corrects <span style="color:#f92672">+=</span> torch<span style="color:#f92672">.</span>sum(preds <span style="color:#f92672">==</span> labels<span style="color:#f92672">.</span>data)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                scheduler<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            epoch_loss <span style="color:#f92672">=</span> running_loss<span style="color:#f92672">/</span>len(datasets[phase])
+</span></span><span style="display:flex;"><span>            epoch_acc <span style="color:#f92672">=</span> running_corrects<span style="color:#f92672">.</span>double()<span style="color:#f92672">/</span>len(datasets[phase])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74"> Loss: </span><span style="color:#e6db74">{:.4f}</span><span style="color:#e6db74"> Acc: </span><span style="color:#e6db74">{:.4f}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(
+</span></span><span style="display:flex;"><span>                phase, epoch_loss, epoch_acc))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;valid&#39;</span> <span style="color:#f92672">and</span> epoch_acc <span style="color:#f92672">&gt;</span> best_acc:
+</span></span><span style="display:flex;"><span>                best_acc <span style="color:#f92672">=</span> epoch_acc
+</span></span><span style="display:flex;"><span>                best_model_wts <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(model<span style="color:#f92672">.</span>state_dict())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        print()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    time_elapsed <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()<span style="color:#f92672">-</span>since
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;Training complete in </span><span style="color:#e6db74">{:.0f}</span><span style="color:#e6db74">m </span><span style="color:#e6db74">{:.0f}</span><span style="color:#e6db74">s&#39;</span><span style="color:#f92672">.</span>format(
+</span></span><span style="display:flex;"><span>        time_elapsed <span style="color:#f92672">//</span> <span style="color:#ae81ff">60</span>, time_elapsed <span style="color:#f92672">%</span> <span style="color:#ae81ff">60</span>))
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;Best val Acc: </span><span style="color:#e6db74">{:4f}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(best_acc))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>load_state_dict(best_model_wts)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> model
+</span></span></code></pre></div><h3 id="loading-our-custom-model">Loading our custom model.<a hidden class="anchor" aria-hidden="true" href="#loading-our-custom-model">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># importig our custom vit model</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> vit <span style="color:#f92672">import</span> VisionTransformer
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> VisionTransformer(n_classes<span style="color:#f92672">=</span>len(name_mapping))
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>datasets<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;train&#39;</span>:train_dataset,<span style="color:#e6db74">&#39;valid&#39;</span>:valid_dataset}
+</span></span><span style="display:flex;"><span>dataloaders<span style="color:#f92672">=</span>{<span style="color:#e6db74">&#39;train&#39;</span>:train_loader,<span style="color:#e6db74">&#39;valid&#39;</span>:valid_loader}
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># device = torch.device(&#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;)</span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cuda:1&#34;</span>
+</span></span><span style="display:flex;"><span>optimizer <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>AdamW(model<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-4</span>, weight_decay<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>)
+</span></span><span style="display:flex;"><span>scheduler <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>lr_scheduler<span style="color:#f92672">.</span>StepLR(optimizer, step_size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, gamma<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+</span></span><span style="display:flex;"><span>criterion<span style="color:#f92672">=</span>nn<span style="color:#f92672">.</span>CrossEntropyLoss()
+</span></span><span style="display:flex;"><span>num_epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">5</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> tqdm <span style="color:#f92672">import</span> tqdm
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train_model</span>(datasets, dataloaders, model, criterion, optimizer, scheduler, num_epochs, device):
+</span></span><span style="display:flex;"><span>    since <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    best_model_wts <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(model<span style="color:#f92672">.</span>state_dict())
+</span></span><span style="display:flex;"><span>    best_acc <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(num_epochs):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Epoch </span><span style="color:#e6db74">{}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(epoch, num_epochs<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;-&#39;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> phase <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#39;train&#39;</span>, <span style="color:#e6db74">&#39;valid&#39;</span>]:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                model<span style="color:#f92672">.</span>train()
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            running_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>            running_corrects <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            train_bar <span style="color:#f92672">=</span> tqdm(dataloaders[phase], desc<span style="color:#f92672">=</span><span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Training&#34;</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> _, (inputs, labels) <span style="color:#f92672">in</span> enumerate(train_bar):
+</span></span><span style="display:flex;"><span>                inputs <span style="color:#f92672">=</span> inputs<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>                labels<span style="color:#f92672">=</span>labels<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Zero out the grads</span>
+</span></span><span style="display:flex;"><span>                optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Forward</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Track history in train mode</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>set_grad_enabled(phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>):
+</span></span><span style="display:flex;"><span>                    model<span style="color:#f92672">=</span>model<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>                    outputs <span style="color:#f92672">=</span> model(inputs)
+</span></span><span style="display:flex;"><span>                    _, preds <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>max(outputs, <span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>                    loss <span style="color:#f92672">=</span> criterion(outputs, labels)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                        loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>                        optimizer<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Statistics</span>
+</span></span><span style="display:flex;"><span>                running_loss <span style="color:#f92672">+=</span> loss<span style="color:#f92672">.</span>item()<span style="color:#f92672">*</span>inputs<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>                running_corrects <span style="color:#f92672">+=</span> torch<span style="color:#f92672">.</span>sum(preds <span style="color:#f92672">==</span> labels<span style="color:#f92672">.</span>data)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;train&#39;</span>:
+</span></span><span style="display:flex;"><span>                scheduler<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            epoch_loss <span style="color:#f92672">=</span> running_loss<span style="color:#f92672">/</span>len(datasets[phase])
+</span></span><span style="display:flex;"><span>            epoch_acc <span style="color:#f92672">=</span> running_corrects<span style="color:#f92672">.</span>double()<span style="color:#f92672">/</span>len(datasets[phase])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74"> Loss: </span><span style="color:#e6db74">{:.4f}</span><span style="color:#e6db74"> Acc: </span><span style="color:#e6db74">{:.4f}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(
+</span></span><span style="display:flex;"><span>                phase, epoch_loss, epoch_acc))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> phase <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;valid&#39;</span> <span style="color:#f92672">and</span> epoch_acc <span style="color:#f92672">&gt;</span> best_acc:
+</span></span><span style="display:flex;"><span>                best_acc <span style="color:#f92672">=</span> epoch_acc
+</span></span><span style="display:flex;"><span>                best_model_wts <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(model<span style="color:#f92672">.</span>state_dict())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        print()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    time_elapsed <span style="color:#f92672">=</span> time<span style="color:#f92672">.</span>time()<span style="color:#f92672">-</span>since
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;Training complete in </span><span style="color:#e6db74">{:.0f}</span><span style="color:#e6db74">m </span><span style="color:#e6db74">{:.0f}</span><span style="color:#e6db74">s&#39;</span><span style="color:#f92672">.</span>format(
+</span></span><span style="display:flex;"><span>        time_elapsed <span style="color:#f92672">//</span> <span style="color:#ae81ff">60</span>, time_elapsed <span style="color:#f92672">%</span> <span style="color:#ae81ff">60</span>))
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#39;Best val Acc: </span><span style="color:#e6db74">{:4f}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>format(best_acc))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>load_state_dict(best_model_wts)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> model
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>trained_model<span style="color:#f92672">=</span>train_model(datasets,dataloaders,model,criterion,optimizer,scheduler,num_epochs,device)
+</span></span></code></pre></div><pre><code>Epoch 0/4
+----------
+
+
+Training: 100%|██████████| 602/602 [06:41&lt;00:00,  1.50it/s]
+
+
+train Loss: 1.1578 Acc: 0.6166
+
+
+Training: 100%|██████████| 67/67 [00:16&lt;00:00,  4.01it/s]
+
+
+valid Loss: 1.0497 Acc: 0.6364
+
+Epoch 1/4
+----------
+
+
+Training: 100%|██████████| 602/602 [06:40&lt;00:00,  1.50it/s]
+
+
+train Loss: 0.9603 Acc: 0.6489
+
+
+Training: 100%|██████████| 67/67 [00:16&lt;00:00,  4.01it/s]
+
+
+valid Loss: 0.9217 Acc: 0.6593
+
+Epoch 2/4
+----------
+
+
+Training: 100%|██████████| 602/602 [06:41&lt;00:00,  1.50it/s]
+
+
+train Loss: 0.8384 Acc: 0.6853
+
+
+Training: 100%|██████████| 67/67 [00:16&lt;00:00,  3.99it/s]
+
+
+valid Loss: 0.8747 Acc: 0.6860
+
+Epoch 3/4
+----------
+
+
+Training: 100%|██████████| 602/602 [06:44&lt;00:00,  1.49it/s]
+
+
+train Loss: 0.8154 Acc: 0.6935
+
+
+Training: 100%|██████████| 67/67 [00:16&lt;00:00,  3.95it/s]
+
+
+valid Loss: 0.8452 Acc: 0.6921
+
+Epoch 4/4
+----------
+
+
+Training: 100%|██████████| 602/602 [06:45&lt;00:00,  1.49it/s]
+
+
+train Loss: 0.7929 Acc: 0.7020
+
+
+Training: 100%|██████████| 67/67 [00:16&lt;00:00,  3.98it/s]
+
+valid Loss: 0.8299 Acc: 0.6981
+
+Training complete in 34m 58s
+Best val Acc: 0.698131
+</code></pre>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>save(model<span style="color:#f92672">.</span>state_dict(), <span style="color:#e6db74">&#39;Custom.pt&#39;</span>)
+</span></span></code></pre></div><p>References:</p>
+<ul>
+<li><a href="https://amaarora.github.io/posts/2021-01-18-ViT.html">https://amaarora.github.io/posts/2021-01-18-ViT.html</a></li>
+<li><a href="https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632">https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632</a></li>
+<li><a href="https://medium.com/artificialis/vit-visiontransformer-a-pytorch-implementation-8d6a1033bdc5">https://medium.com/artificialis/vit-visiontransformer-a-pytorch-implementation-8d6a1033bdc5</a></li>
+<li><a href="https://medium.com/mlearning-ai/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c">https://medium.com/mlearning-ai/vision-transformers-from-scratch-pytorch-a-step-by-step-guide-96c3313c2e0c</a></li>
+<li><a href="https://www.kaggle.com/code/abhinand05/vision-transformer-vit-tutorial-baseline">https://www.kaggle.com/code/abhinand05/vision-transformer-vit-tutorial-baseline</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/computer-vison/">Computer Vison</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://R4j4n.github.io/blogs/posts/deeplab/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>Semantic Segmentation from scratch in PyTorch.</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

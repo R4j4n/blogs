@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Rajan Ghimire</title>
+    <link>https://R4j4n.github.io/blogs/</link>
+    <description>Recent content on Rajan Ghimire</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LORA(Low Rank Adaptation) : A Deeper Dive</title>
+      <link>https://R4j4n.github.io/blogs/posts/lora/</link>
+      <pubDate>Mon, 06 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/lora/</guid>
+      <description>Exploring and Implementating LoRA in PyTorch.</description>
+    </item>
+    
+    <item>
+      <title>Semantic Segmentation from scratch in PyTorch.</title>
+      <link>https://R4j4n.github.io/blogs/posts/deeplab/</link>
+      <pubDate>Mon, 06 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/deeplab/</guid>
+      <description>Implementing sematic segmentation from scratch.</description>
+    </item>
+    
+    <item>
+      <title>Vision Transformer (ViT)</title>
+      <link>https://R4j4n.github.io/blogs/posts/vit/</link>
+      <pubDate>Mon, 06 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/vit/</guid>
+      <description>ViT from scratch in pytorch</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://R4j4n.github.io/blogs/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/about/</guid>
+      <description>Hello all My name is rajan ghimire
+$e^2$</description>
+    </item>
+    
+  </channel>
+</rss>

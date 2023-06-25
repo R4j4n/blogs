@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>LORA(Low Rank Adaptation) : A Deeper Dive | Rajan Ghimire</title>
+<meta name="keywords" content="Natural Language Processing, PyTorch">
+<meta name="description" content="Exploring and Implementating LoRA in PyTorch.">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/lora/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="LORA(Low Rank Adaptation) : A Deeper Dive" />
+<meta property="og:description" content="Exploring and Implementating LoRA in PyTorch." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/lora/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-03-06T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-06T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="LORA(Low Rank Adaptation) : A Deeper Dive"/>
+<meta name="twitter:description" content="Exploring and Implementating LoRA in PyTorch."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "LORA(Low Rank Adaptation) : A Deeper Dive",
+      "item": "https://R4j4n.github.io/blogs/posts/lora/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LORA(Low Rank Adaptation) : A Deeper Dive",
+  "name": "LORA(Low Rank Adaptation) : A Deeper Dive",
+  "description": "Exploring and Implementating LoRA in PyTorch.",
+  "keywords": [
+    "Natural Language Processing", "PyTorch"
+  ],
+  "articleBody": "LoRA is a fast fine-tuning approach developed by Microsoft researchers for adapting huge models to specific tasks and datasets. The idea behind LoRA is that a single LLM model can be used for various tasks by incorporating different neurons or features to handle each task. By identifying the appropriate features from a pool of many and improving them, we can obtain better outcomes for specific tasks.\nFine-tuning\nLet,\n$L =$ Loss function $X,y =$ Input and output data. $W$ = Weights from a pre-trained network.\nThe task of fine-tuning a neural network can be expressed as : $$L(X,y;W + \\Delta W_0)$$ Our goal is to find $\\Delta W_0$ that minimizes $L(X,y;W + \\Delta W_0)$. For the parameter $\\Delta W_0$, its dimension is equal to that of $W$ i.e. $|W_0|= |W|$. If the $|W|$ is a very large-scale pre-trained model, then finding the $\\Delta W_0$ becomes computationally challenging.\nDuring the training of fully connected layers in a neural network, the weight matrices are typically full rank, meaning that they do not have any redundant rows or columns. The authors of LoRA pointed out that while the weights of a pre-trained model have full rank for the pre-trained tasks, large language models have a low “intrinsic dimension”. This means that the data can be represented or approximated effectively by a lower-dimensional space while retaining most of its essential information or structure. In simpler terms, this implies that we can break down the new weight matrix for the adapted task into lower-dimensional components.\nLoRA applies a simple matrix decomposition to each weight matrix update. i.e $\\Delta\\theta$ ∈ $\\Delta W_0$. Considering $\\Delta\\theta_i$ ∈ $\\mathbb{R}^{d x k}$ the update of $i$th weight in network, Lora approx with:\n$$ \\Delta\\theta_i = BA $$\nWhere, A ∈ $\\mathbb{R^{rxd}}$ and B ∈ $\\mathbb{R^{dxr}}$ and the rank $r«min(d,k)$. This means that for forward pass of the layer, originally $W x$, is modified to $Wx + BAx$ (as shown in the figure above). Thus instead of learning $d×k$ parameters we now need to learn $(d+k)×r$ which is easily a lot smaller given the multiplicative aspect. A random Gaussian initialization is used for $A$ and $B$ is initially set to 0, so $\\Delta\\theta_i = BA =0$ at the start of training. The update $\\Delta\\theta_i or BA$ is additionally scaled with a factor $α/r$ which can be interpreted as a learning rate for the LoRA update.\nIf we limit the $rank (r)$ to a smaller value in the middle, we can greatly reduce the number of trainable parameters and decrease the dimensionality of the features to $“r « d”$. This will result in an overall parameter count of $\"|W|=2×LoRA ×dmodel ×r\"$ where, $LoRA$ is the number of $LoRA$ modules used in the entire model\nOnce the fine-tuning is done, we can just simply update weights in $W$ by adding with its respective $\\Delta\\theta$.\nPyTorch Minimal Implementation Let’s train a simple implementation of linear regression using PyTorch.\nWe will create simple training data using $y=\\theta X$\nThen we will build a LinearRegressionModel to estimate the value of $\\theta$. Let’s assume it to be our pre-trained model.\nimport math import torch import torch.nn as nn # Define dimensions n = 10000 # Total number of samples d_in = 1001 d_out = 1000 hidden_dim = 1000 # Moving data to the device device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # Define the data thetas = torch.randn(d_in, d_out).to(device) X = torch.randn(n, d_in).to(device) y = torch.matmul(X, thetas).to(device) print(f\"Shape of X : {X.shape}\") print(f\"Shape of y : {y.shape}\") print(f\"Shape of θ : {thetas.shape}\") Shape of X : torch.Size([10000, 1001]) Shape of y : torch.Size([10000, 1000]) Shape of θ : torch.Size([1001, 1000]) Now, let’s define our LinearRegressionModel. It consists of two simple linear layers.\nclass LinearRegressionModel(nn.Module): def __init__(self, input_dim, hidden_dim, output_dim): super(LinearRegressionModel, self).__init__() self.layer1 = nn.Linear(input_dim, hidden_dim, bias=False) self.layer2 = nn.Linear(hidden_dim, output_dim,bias=False) def forward(self, x): out = self.layer1(x) out = self.layer2(out) return out def train(model, X, y, batch_size=128, epochs=100): opt = torch.optim.Adam(model.parameters()) for epoch in range(epochs): # randomly shuffle the input data permutation = torch.randperm(X.size()[0]) for i in range(0, X.size()[0], batch_size): opt.zero_grad() indices = permutation[i:i+batch_size] batch_x, batch_y = X[indices], y[indices] outputs = model(batch_x) loss = torch.nn.functional.mse_loss(outputs, batch_y) loss.backward() opt.step() if epoch % 10 == 0: with torch.no_grad(): outputs = model(X) loss = torch.nn.functional.mse_loss(outputs, y) print(f\"Epoch : {epoch }/{epochs} Loss : {loss.item()} \") # Define the model model = LinearRegressionModel(d_in, hidden_dim, d_out).to(device) train(model, X, y) Epoch : 0/100 Loss : 868.3592529296875 Epoch : 10/100 Loss : 18.999113082885742 Epoch : 20/100 Loss : 1.2845144271850586 Epoch : 30/100 Loss : 0.1564238965511322 Epoch : 40/100 Loss : 0.028503887355327606 Epoch : 50/100 Loss : 0.006223085802048445 Epoch : 60/100 Loss : 0.0016892347484827042 Epoch : 70/100 Loss : 0.7939147353172302 Epoch : 80/100 Loss : 0.2283499538898468 Epoch : 90/100 Loss : 0.2333495020866394 Now that we have our base model that has been pre-trained, let’s assume that we have data from a slightly different distribution\nthetas2 = thetas + 1 X2 = torch.randn(n, d_in).to(device) y2 = torch.matmul(X2, thetas2).to(device) As we know this data is from a different distribution, if we apply this data to our base model we wont get good performance.\nloss = torch.nn.functional.mse_loss(model(X2), y2) print(f\"Loss on different distribution: {loss}\") Loss on different distribution: 1013.2288818359375 We now fine-tune our initial model $\\theta$. The distribution of the new data is just slighly different from the initial one. It’s just a rotation of the data points, by adding 1 to all thetas. This means that the weight updates are not expected to be complex, and we shouldn’t need a full-rank update in order to get good results.\nclass LoRAAdapter(nn.Module): def __init__(self, model, r=16, alpha=1): super(LoRAAdapter, self).__init__() self.module_list = nn.ModuleList() self.scaling = alpha / r self.original_linears = [] # Go through the layers of the model # if the layer is linear layer, add an adpter to it. for layer in model.children(): if isinstance(layer, nn.Linear): # Keep a reference to the original linear layers # we may need them to add A and B praramters self.original_linears.append(layer) # Create an adapted layer for each Linear layer adapted_layer = AdaptedLinear(layer, r, self.scaling) self.module_list.append(adapted_layer) else: # Keep other types of layers as they are self.module_list.append(layer) def forward(self, x): for layer in self.module_list: x = layer(x) return x def update_original_weights(self): with torch.no_grad(): for adapted_layer, original_layer in zip(self.module_list, self.original_linears): delta_theta = torch.matmul(adapted_layer.A, adapted_layer.B) * adapted_layer.scaling original_layer.weight.add_(delta_theta.t()) class AdaptedLinear(nn.Module): def __init__(self, linear, r, scaling ) -\u003e None: super().__init__() linear.requires_grad_(False) self.linear = linear self.A = nn.Parameter(torch.randn(linear.in_features, r)) self.B = nn.Parameter(torch.zeros(r, linear.out_features)) self.scaling = scaling def forward(self, x): return self.linear(x) + torch.matmul(x, torch.matmul(self.A, self.B) * self.scaling) lora_model = LoRAAdapter(model, r=1).to(device) We have now initialized our Lora model. For simplicity let’s put $r = 1$. Now, let’s train the model.\ntrain(lora_model,X=X2,y=y2) Epoch : 0/100 Loss : 1007.549072265625 Epoch : 10/100 Loss : 679.202880859375 Epoch : 20/100 Loss : 317.93316650390625 Epoch : 30/100 Loss : 124.77867889404297 Epoch : 40/100 Loss : 39.598350524902344 Epoch : 50/100 Loss : 9.39522933959961 Epoch : 60/100 Loss : 1.6521010398864746 Epoch : 70/100 Loss : 0.4204731583595276 Epoch : 80/100 Loss : 0.3215165138244629 Epoch : 90/100 Loss : 0.3118535876274109 Up to this point, we just trained the A and B parameters but we still haven’t performed changes in $W x$ i.e. $Wx + BAx$. So the model won’t show any improvements.\nloss = torch.nn.functional.mse_loss(model(X2), y2) print(f\"Loss on different distribution: {loss}\") Loss on different distribution: 1013.2288818359375 Now after performing $Wx + BAx$ for each of the linear layers in the model, the loss will converge. i.e We have successfully finetuned our model on new distribution.\nlora_model.update_original_weights() loss = torch.nn.functional.mse_loss(model(X2), y2) print(f\"Loss on different distribution: {loss}\") Loss on different distribution: 0.3048411011695862 ",
+  "wordCount" : "1252",
+  "inLanguage": "en",
+  "datePublished": "2023-03-06T00:00:00Z",
+  "dateModified": "2023-03-06T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/lora/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      LORA(Low Rank Adaptation) : A Deeper Dive
+    </h1>
+    <div class="post-description">
+      Exploring and Implementating LoRA in PyTorch.
+    </div>
+    <div class="post-meta"><span title='2023-03-06 00:00:00 +0000 UTC'>March 6, 2023</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#pytorch-minimal-implementation" aria-label="PyTorch Minimal Implementation">PyTorch Minimal Implementation</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>LoRA is a fast fine-tuning approach developed by Microsoft researchers for adapting huge models to specific tasks and datasets. The idea behind LoRA is that a single LLM model can be used for various tasks by incorporating different neurons or features to handle each task. By identifying the appropriate features from a pool of many and improving them, we can obtain better outcomes for specific tasks.</p>
+<p><strong>Fine-tuning</strong></p>
+<p>Let,</p>
+<p>$L =$ Loss function <!-- raw HTML omitted -->
+$X,y =$ Input and output data. <!-- raw HTML omitted -->
+$W$ = Weights from a pre-trained network.</p>
+<p>The task of fine-tuning a neural network can be expressed as :
+$$L(X,y;W + \Delta W_0)$$
+Our goal is to find $\Delta W_0$ that minimizes $L(X,y;W + \Delta W_0)$. For the parameter $\Delta W_0$, its dimension is equal to that of $W$ i.e. $|W_0|= |W|$. If the $|W|$ is a very large-scale pre-trained model, then finding the $\Delta W_0$ becomes computationally challenging.</p>
+<p>During the training of fully connected layers in a neural network, the weight matrices are typically <strong>full rank</strong>, meaning that they do not have any redundant rows or columns. The authors of LoRA pointed out that while the weights of a pre-trained model have <strong>full rank</strong> for the pre-trained tasks, large language models have a low <strong>&ldquo;intrinsic dimension&rdquo;</strong>. This means that the data can be represented or approximated effectively by a <strong>lower-dimensional space</strong> while retaining most of its essential information or structure. In simpler terms, this implies that we can break down the new weight matrix for the adapted task into lower-dimensional components.</p>
+<p><img loading="lazy" src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*D_i25E9dTd_5HMa45zITSg.png" alt=""  />
+</p>
+<p>LoRA applies a simple matrix decomposition to each weight matrix update. i.e $\Delta\theta$ ∈ $\Delta W_0$.
+Considering $\Delta\theta_i$ ∈ $\mathbb{R}^{d x k}$ the update of $i$th weight in network, Lora approx with:</p>
+<p>$$
+\Delta\theta_i = BA
+$$</p>
+<p>Where, A ∈ $\mathbb{R^{rxd}}$ and B ∈ $\mathbb{R^{dxr}}$ and the rank $r&laquo;min(d,k)$. This means that for forward pass of the layer, originally $W x$, is modified to $Wx + BAx$ (as shown in the figure above).  Thus instead of learning $d×k$
+parameters we now need to learn $(d+k)×r$
+which is easily a lot smaller given the multiplicative aspect. A random Gaussian initialization is used for $A$ and $B$ is initially set to 0, so $\Delta\theta_i = BA =0$ at the start of training. The update $\Delta\theta_i or BA$ is additionally scaled with a factor $α/r$ which can be interpreted as a learning rate for the LoRA update.</p>
+<p>If we limit the $rank (r)$ to a smaller value in the middle, we can greatly reduce the number of trainable parameters and decrease the dimensionality of the features to $&ldquo;r &laquo; d&rdquo;$. This will result in an overall parameter count of
+$&quot;|W|=2×LoRA ×dmodel ×r&quot;$ where, $LoRA$ is the number of $LoRA$ modules used in the entire model</p>
+<p>Once the fine-tuning is done, we can just simply update weights in $W$ by adding with its respective $\Delta\theta$.</p>
+<h2 id="pytorch-minimal-implementation">PyTorch Minimal Implementation<a hidden class="anchor" aria-hidden="true" href="#pytorch-minimal-implementation">#</a></h2>
+<p>Let&rsquo;s train a simple implementation of linear regression using PyTorch.</p>
+<p>We will create simple training data using $y=\theta X$</p>
+<p>Then we will build a LinearRegressionModel to estimate the value of $\theta$. Let&rsquo;s assume it to be our pre-trained model.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> math
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Define dimensions</span>
+</span></span><span style="display:flex;"><span>n <span style="color:#f92672">=</span> <span style="color:#ae81ff">10000</span> <span style="color:#75715e"># Total number of samples</span>
+</span></span><span style="display:flex;"><span>d_in <span style="color:#f92672">=</span> <span style="color:#ae81ff">1001</span>
+</span></span><span style="display:flex;"><span>d_out <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>hidden_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Moving data to the device</span>
+</span></span><span style="display:flex;"><span>device <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#39;cuda&#39;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#39;cpu&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Define the data</span>
+</span></span><span style="display:flex;"><span>thetas <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(d_in, d_out)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(n, d_in)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>y <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(X, thetas)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Shape of X : </span><span style="color:#e6db74">{</span>X<span style="color:#f92672">.</span>shape<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Shape of y : </span><span style="color:#e6db74">{</span>y<span style="color:#f92672">.</span>shape<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Shape of θ : </span><span style="color:#e6db74">{</span>thetas<span style="color:#f92672">.</span>shape<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><pre><code>Shape of X : torch.Size([10000, 1001])
+Shape of y : torch.Size([10000, 1000])
+Shape of θ : torch.Size([1001, 1000])
+</code></pre>
+<p>Now, let&rsquo;s define our <code>LinearRegressionModel</code>. It consists of two simple linear layers.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinearRegressionModel</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, input_dim, hidden_dim, output_dim):
+</span></span><span style="display:flex;"><span>        super(LinearRegressionModel, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layer1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(input_dim, hidden_dim, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>layer2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(hidden_dim, output_dim,bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layer1(x)
+</span></span><span style="display:flex;"><span>        out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>layer2(out)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> out
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train</span>(model, X, y, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">128</span>, epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">100</span>):
+</span></span><span style="display:flex;"><span>    opt <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(epochs):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># randomly shuffle the input data</span>
+</span></span><span style="display:flex;"><span>        permutation <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randperm(X<span style="color:#f92672">.</span>size()[<span style="color:#ae81ff">0</span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, X<span style="color:#f92672">.</span>size()[<span style="color:#ae81ff">0</span>], batch_size):
+</span></span><span style="display:flex;"><span>            opt<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            indices <span style="color:#f92672">=</span> permutation[i:i<span style="color:#f92672">+</span>batch_size]
+</span></span><span style="display:flex;"><span>            batch_x, batch_y <span style="color:#f92672">=</span> X[indices], y[indices]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            outputs <span style="color:#f92672">=</span> model(batch_x)
+</span></span><span style="display:flex;"><span>            loss <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>functional<span style="color:#f92672">.</span>mse_loss(outputs, batch_y)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>            opt<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> epoch <span style="color:#f92672">%</span> <span style="color:#ae81ff">10</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>                outputs <span style="color:#f92672">=</span> model(X)
+</span></span><span style="display:flex;"><span>                loss <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>functional<span style="color:#f92672">.</span>mse_loss(outputs, y)
+</span></span><span style="display:flex;"><span>                print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch : </span><span style="color:#e6db74">{</span>epoch <span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{</span>epochs<span style="color:#e6db74">}</span><span style="color:#e6db74"> Loss : </span><span style="color:#e6db74">{</span>loss<span style="color:#f92672">.</span>item()<span style="color:#e6db74">}</span><span style="color:#e6db74"> &#34;</span>)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Define the model</span>
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> LinearRegressionModel(d_in, hidden_dim, d_out)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train(model, X, y)
+</span></span></code></pre></div><pre><code>Epoch : 0/100 Loss : 868.3592529296875 
+Epoch : 10/100 Loss : 18.999113082885742 
+Epoch : 20/100 Loss : 1.2845144271850586 
+Epoch : 30/100 Loss : 0.1564238965511322 
+Epoch : 40/100 Loss : 0.028503887355327606 
+Epoch : 50/100 Loss : 0.006223085802048445 
+Epoch : 60/100 Loss : 0.0016892347484827042 
+Epoch : 70/100 Loss : 0.7939147353172302 
+Epoch : 80/100 Loss : 0.2283499538898468 
+Epoch : 90/100 Loss : 0.2333495020866394 
+</code></pre>
+<p>Now that we have our base model that has been pre-trained, let&rsquo;s assume that we have data from a <strong>slightly different distribution</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>thetas2 <span style="color:#f92672">=</span> thetas <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X2 <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>randn(n, d_in)<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>y2 <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(X2, thetas2)<span style="color:#f92672">.</span>to(device)
+</span></span></code></pre></div><p>As we know this data is from a different distribution, if we apply this data to our base model we wont get good performance.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>loss <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>functional<span style="color:#f92672">.</span>mse_loss(model(X2), y2)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Loss on different distribution: </span><span style="color:#e6db74">{</span>loss<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><pre><code>Loss on different distribution: 1013.2288818359375
+</code></pre>
+<p>We now fine-tune our initial model $\theta$. The distribution of the new data is just slighly different from the initial one. It’s just a rotation of the data points, by adding 1 to all thetas. This means that the weight updates are not expected to be complex, and we shouldn’t need a <strong>full-rank update</strong> in order to get good results.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LoRAAdapter</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, model, r<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>):
+</span></span><span style="display:flex;"><span>        super(LoRAAdapter, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>module_list <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ModuleList()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>scaling <span style="color:#f92672">=</span> alpha <span style="color:#f92672">/</span> r
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>original_linears <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Go through the layers of the model</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># if the layer is linear layer, add an adpter to it.</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> layer <span style="color:#f92672">in</span> model<span style="color:#f92672">.</span>children():
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> isinstance(layer, nn<span style="color:#f92672">.</span>Linear):
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Keep a reference to the original linear layers</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># we may need them to add A and B praramters</span>
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>original_linears<span style="color:#f92672">.</span>append(layer)
+</span></span><span style="display:flex;"><span>                
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Create an adapted layer for each Linear layer</span>
+</span></span><span style="display:flex;"><span>                adapted_layer <span style="color:#f92672">=</span> AdaptedLinear(layer, r, self<span style="color:#f92672">.</span>scaling)
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>module_list<span style="color:#f92672">.</span>append(adapted_layer)
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e"># Keep other types of layers as they are</span>
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>module_list<span style="color:#f92672">.</span>append(layer)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> layer <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>module_list:
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> layer(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">update_original_weights</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> adapted_layer, original_layer <span style="color:#f92672">in</span> zip(self<span style="color:#f92672">.</span>module_list, self<span style="color:#f92672">.</span>original_linears):
+</span></span><span style="display:flex;"><span>                delta_theta <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>matmul(adapted_layer<span style="color:#f92672">.</span>A, adapted_layer<span style="color:#f92672">.</span>B) <span style="color:#f92672">*</span> adapted_layer<span style="color:#f92672">.</span>scaling
+</span></span><span style="display:flex;"><span>                original_layer<span style="color:#f92672">.</span>weight<span style="color:#f92672">.</span>add_(delta_theta<span style="color:#f92672">.</span>t())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AdaptedLinear</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, linear, r, scaling ) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        linear<span style="color:#f92672">.</span>requires_grad_(<span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>linear <span style="color:#f92672">=</span> linear
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>A <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>randn(linear<span style="color:#f92672">.</span>in_features, r))
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>B <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(r, linear<span style="color:#f92672">.</span>out_features))
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>scaling <span style="color:#f92672">=</span> scaling
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>linear(x) <span style="color:#f92672">+</span> torch<span style="color:#f92672">.</span>matmul(x, torch<span style="color:#f92672">.</span>matmul(self<span style="color:#f92672">.</span>A, self<span style="color:#f92672">.</span>B) <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>scaling)
+</span></span><span style="display:flex;"><span>    
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>lora_model <span style="color:#f92672">=</span> LoRAAdapter(model, r<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>to(device)
+</span></span></code></pre></div><p>We have now initialized our Lora model. For simplicity let&rsquo;s put $r = 1$. Now, let&rsquo;s train the model.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train(lora_model,X<span style="color:#f92672">=</span>X2,y<span style="color:#f92672">=</span>y2)
+</span></span></code></pre></div><pre><code>Epoch : 0/100 Loss : 1007.549072265625 
+Epoch : 10/100 Loss : 679.202880859375 
+Epoch : 20/100 Loss : 317.93316650390625 
+Epoch : 30/100 Loss : 124.77867889404297 
+Epoch : 40/100 Loss : 39.598350524902344 
+Epoch : 50/100 Loss : 9.39522933959961 
+Epoch : 60/100 Loss : 1.6521010398864746 
+Epoch : 70/100 Loss : 0.4204731583595276 
+Epoch : 80/100 Loss : 0.3215165138244629 
+Epoch : 90/100 Loss : 0.3118535876274109 
+</code></pre>
+<p>Up to this point, we just trained the A and B parameters but we still haven&rsquo;t performed changes in $W x$ i.e. $Wx + BAx$. So the model won&rsquo;t show any improvements.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>loss <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>functional<span style="color:#f92672">.</span>mse_loss(model(X2), y2)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Loss on different distribution: </span><span style="color:#e6db74">{</span>loss<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><pre><code>Loss on different distribution: 1013.2288818359375
+</code></pre>
+<p>Now after performing $Wx + BAx$ for each of the linear layers in the model, the loss will converge. i.e We have successfully finetuned our model on new distribution.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>lora_model<span style="color:#f92672">.</span>update_original_weights()
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>loss <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>functional<span style="color:#f92672">.</span>mse_loss(model(X2), y2)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Loss on different distribution: </span><span style="color:#e6db74">{</span>loss<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><pre><code>Loss on different distribution: 0.3048411011695862
+</code></pre>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/natural-language-processing/">Natural Language Processing</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://R4j4n.github.io/blogs/posts/deeplab/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Semantic Segmentation from scratch in PyTorch.</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
