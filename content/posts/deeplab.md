@@ -98,7 +98,7 @@ In ASPP layer, one 1x1 convolution and three 3x3 convolutions with different rat
 
 ![https://miro.medium.com/max/720/1*_8p_KTPr5N0HSeIKV35G_g.png](https://miro.medium.com/max/720/1*_8p_KTPr5N0HSeIKV35G_g.png)
 
-### Encode block in pytorch:
+### Encoder block in pytorch:
 
 ```python
 class ASSP(nn.Module):
