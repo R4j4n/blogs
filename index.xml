@@ -6,7 +6,16 @@
     <description>Recent content on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance</title>
+      <link>https://R4j4n.github.io/blogs/posts/quantization/</link>
+      <pubDate>Sat, 15 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/quantization/</guid>
+      <description>Dissecting Static, Dynamic and Quantization Aware Training in PyTorch.</description>
+    </item>
+    
     <item>
       <title>LORA(Low Rank Adaptation) : A Deeper Dive</title>
       <link>https://R4j4n.github.io/blogs/posts/lora/</link>
@@ -40,9 +49,8 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://R4j4n.github.io/blogs/about/</guid>
-      <description>Hello! ¡Hola! Bonjour! Привет! こんにちは！ 你好！ 안녕하세요! مرحباً! नमस्ते!
-Rajan Ghimire: Deep Learning Engineer and NLP Enthusiast
-I&amp;rsquo;m Rajan Ghimire, a computer engineering graduate with a keen interest in implementing deep learning architectures and papers from scratch. As a NLP/Deep Learning Engineer, I thrive on tackling complex challenges and transforming them into practical solutions. My unique blend of theoretical knowledge and hands-on experience allows me to bridge the gap between academia and industry, crafting innovative solutions that push the boundaries of what&amp;rsquo;s possible.</description>
+      <description>I wanna sleep so much but this filed is so damn interesting ! Hello! ¡Hola! Bonjour! Привет! こんにちは！ 你好！ 안녕하세요! مرحباً! नमस्ते!
+I&amp;rsquo;m Rajan Ghimire, a computer engineering graduate with a keen interest in implementing deep learning architectures and papers from scratch. My unique blend of theoretical knowledge and hands-on experience allows me to bridge the gap between academia and industry, crafting innovative solutions that push the boundaries of what&amp;rsquo;s possible.</description>
     </item>
     
   </channel>

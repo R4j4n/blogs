@@ -6,7 +6,16 @@
     <description>Recent content in PyTorch on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance</title>
+      <link>https://R4j4n.github.io/blogs/posts/quantization/</link>
+      <pubDate>Sat, 15 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/quantization/</guid>
+      <description>Dissecting Static, Dynamic and Quantization Aware Training in PyTorch.</description>
+    </item>
+    
     <item>
       <title>LORA(Low Rank Adaptation) : A Deeper Dive</title>
       <link>https://R4j4n.github.io/blogs/posts/lora/</link>

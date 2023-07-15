@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance | Rajan Ghimire</title>
+<meta name="keywords" content="Deep Learning., PyTorch">
+<meta name="description" content="Dissecting Static, Dynamic and Quantization Aware Training in PyTorch.">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/quantization/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance" />
+<meta property="og:description" content="Dissecting Static, Dynamic and Quantization Aware Training in PyTorch." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/quantization/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-07-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-07-15T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance"/>
+<meta name="twitter:description" content="Dissecting Static, Dynamic and Quantization Aware Training in PyTorch."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance",
+      "item": "https://R4j4n.github.io/blogs/posts/quantization/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance",
+  "name": "PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance",
+  "description": "Dissecting Static, Dynamic and Quantization Aware Training in PyTorch.",
+  "keywords": [
+    "Deep Learning.", "PyTorch"
+  ],
+  "articleBody": " Introduction In the rapidly evolving world of machine learning, one of the fundamental challenges is to make deep learning models run more efficiently. Model quantization is a strategy that allows for the reduction of memory requirements and computational needs, making the deployment of such models on hardware with constrained resources feasible and more efficient. In this blog, we’re going to take a deep dive into the realm of PyTorch model quantization.\nWe will first design and train a custom deep-learning architecture using PyTorch.Once our model is trained and ready, we’ll walk through the process of applying three distinct quantization techniques: static quantization, dynamic quantization, and quantization-aware training. Each of these techniques carries its unique strengths and potential limitations, contributing differently to the model’s performance and efficiency. Our objective will be to grasp not just the hows, but also the whys of PyTorch model quantization. We’ll see how each strategy affects the size, speed, and accuracy of the model. So, let’s get started!\nDeep Dive into Quantization Model quantization is the process of reducing the numerical precision of the weights and biases of a model. This process is crucial because it reduces the model size and speeds up inference, making real-time applications possible. The precision reduction is typically from floating-point numbers to integers that need less memory and computational power.\nQuantization in deep neural networks is a crucial optimization technique, primarily needed for reducing model size, increasing computational efficiency, enhancing energy efficiency, and ensuring hardware compatibility. By truncating the numerical precision of parameters (weights and biases), quantization can substantially shrink the model’s memory footprint, making it easier to store and deploy. The practice also improves computational speed, making it essential for real-time applications. Moreover, it can reduce energy consumption, a critical concern for edge devices like mobile phones or IoT devices. Lastly, certain hardware accelerators are optimized for lower-precision computations, making quantization key to maximizing these optimizations. Although a trade-off exists as some accuracy may be lost due to reduced precision, various techniques are used to manage this.\nSetting Up the Model We’ll use a straightforward yet effective architecture to classify the MNIST dataset, a popular dataset containing grayscale images of handwritten digits. This simple deep learning model was chosen to highlight the power and effectiveness of model quantization without the complexity of a more elaborate architecture This architecture will consist Conv2d, BatchNorm2d, MaxPool2d, Linear, and ReLU blocks.\nimport warnings warnings.filterwarnings(\"ignore\") import os import torch import torchvision import torch.nn as nn import torch.optim as optim import torch.nn.functional as F from torch.utils.data import DataLoader import torchvision.transforms as transforms Architecture :\nclass Net(nn.Module): def __init__(self): super(Net, self).__init__() self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1) self.bn1 = nn.BatchNorm2d(32) self.relu1 = nn.ReLU(inplace=True) self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1) self.bn2 = nn.BatchNorm2d(64) self.relu2 = nn.ReLU(inplace=True) self.maxpool = nn.MaxPool2d(2, 2) # Initialized here self.fc1 = nn.Linear(7*7*64, 512) self.relu3 = nn.ReLU(inplace=True) self.fc2 = nn.Linear(512, 10) def forward(self, x): x = self.conv1(x) x = self.bn1(x) x = self.relu1(x) x = self.maxpool(x) x = self.conv2(x) x = self.bn2(x) x = self.relu2(x) x = self.maxpool(x) x = x.reshape(x.shape[0], -1) x = self.fc1(x) x = self.relu3(x) x = self.fc2(x) return x Dataset and Dataloaders:\ntransform = transforms.Compose( [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]) trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform) trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True, num_workers=16, pin_memory=True) testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform) testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False, num_workers=16, pin_memory=True) I will be using my ClassifierTrainer class to train the model. This class contains methods to train the model, save the model, and plot the accuracy and loss plot. All the helper methods and classes that we will be using here can be found in my GitHub repo.\nfrom train_helpers import ClassifierTrainer,save_plots unqant_model = Net() # The unquantized model. criterion = nn.CrossEntropyLoss() optimizer = optim.SGD(unqant_model.parameters(), lr=0.01) trainer = ClassifierTrainer( model= unqant_model, optimizer=optimizer, criterion=criterion, train_loader=trainloader, val_loader=testloader, num_epochs=4, cuda=False ) trainer.train() save_plots( train_acc=trainer.train_accs, train_loss=trainer.train_losses, valid_acc=trainer.val_accs, valid_loss=trainer.val_losses, ) Epoch : 1/4: 100%|██████████| 938/938 [00:17\u003c00:00, 55.13it/s, Accuracy=94.085, Loss=0.008] Validation Accuracy: 97.48% and Loss: 0.08185123530910558 Best validation loss: 0.08185123530910558 Saving best model for epoch: 1 Epoch : 2/4: 100%|██████████| 938/938 [00:15\u003c00:00, 59.86it/s, Accuracy=97.878, Loss=0.0259] Validation Accuracy: 98.19% and Loss: 0.0588834396460402 Best validation loss: 0.0588834396460402 Saving best model for epoch: 2 Epoch : 3/4: 100%|██████████| 938/938 [00:15\u003c00:00, 59.80it/s, Accuracy=98.407, Loss=0.0345] Validation Accuracy: 98.61% and Loss: 0.04700030308571988 Best validation loss: 0.04700030308571988 Saving best model for epoch: 3 Epoch : 4/4: 100%|██████████| 938/938 [00:15\u003c00:00, 59.63it/s, Accuracy=98.658, Loss=0.0237] Validation Accuracy: 98.64% and Loss: 0.043366746839516274 Best validation loss: 0.043366746839516274 Saving best model for epoch: 4 Types of Model Quantization Now, as our model is being trained, let’s dive deeper into quantization. PyTorch offers three distinct quantization methods, each differentiated by how the bins for converting fp32 to int8 are established. Each of these three PyTorch quantization strategies has unique ways of adjusting the quantization algorithm and deciding the bins used to transform the float 32 vectors into int8. As a result, each method brings its own set of benefits and potential limitations.\nStatic Quantization Dynamic Quantization Quantization-Aware Training Static Quantization / Post-Training Static Quantization Static Quantization, also known as post-training quantization, is the most common form of quantization. It’s applied after the model training is complete. Here, both weights and activations of the model are quantised to lower precision. The scales and zero points for static quantization are calculated before inference using a representative dataset, in contrast to dynamic quantization, where they were gathered during inference.\nSince the quantization process happens offline after training, there’s no runtime overhead for quantizing weights and activations. Quantized models are usually compatible with hardware accelerators designed for low-precision computation, enabling even faster inference.\nHowever, Converting from high-precision weights and activations to lower precision can lead to a slight drop in model accuracy. Also, you need representative data for the calibration step in static quantization. It’s crucial to select a dataset that closely resembles the data the model will see in production.\nSteps for Static Quantization:\nSet the model to evaluation mode with model.eval(). This is important as certain layers like dropout and batchnorm behave differently during training and evaluation. import copy unqant_model_copy = copy.deepcopy(unqant_model) unqant_model_copy.eval() Net( (conv1): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) (bn1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True) (relu1): ReLU(inplace=True) (conv2): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)) (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True) (relu2): ReLU(inplace=True) (maxpool): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False) (fc1): Linear(in_features=3136, out_features=512, bias=True) (relu3): ReLU(inplace=True) (fc2): Linear(in_features=512, out_features=10, bias=True) ) Define the list of layers in your model architecture that can be fused together for the purpose of quantization. When performing quantization, certain groups of operations can be replaced by single operations that are equivalent but more computationally efficient. For example, a convolution followed by a batch normalization, followed by a ReLU operation (Conv -\u003e BatchNorm -\u003e ReLU), can be replaced by a single fused ConvBnReLU operation. We will use torch.quantization.fuse_modules to fuse a list of modules into a single module. This has several advantages: Performance Improvement: By fusing multiple operations into one, the fused operation can be faster than the individual operations due to fewer function calls and less data movement.\nMemory Efficiency: Fused operations reduce the need for intermediate results. This can significantly reduce memory usage, especially for large models and inputs.\nSimplified Model Graph: The process of fusing operations can simplify the model graph, making it easier to understand and optimize.\nOur model architecture contains 2 (Conv -\u003e BatchNorm -\u003e ReLU) blocks. We can combine these blocks into a ConvBnReLU block.\nfused_layers = [['conv1', 'bn1', 'relu1'], ['conv2', 'bn2', 'relu2']] fused_model = torch.quantization.fuse_modules(unqant_model_copy, fused_layers, inplace=True) Next, we will use the QuantizedModel wrapper class to wrap our model. class QuantizedModel(torch.nn.Module): def __init__(self, model): super().__init__() self.model_fp32 = model self.quant = torch.quantization.QuantStub() self.dequant = torch.quantization.DeQuantStub() def forward(self, x): x = self.quant(x) x = self.model_fp32(x) x = self.dequant(x) return x The essence of this code is to add quantization and dequantization stubs to the model, which will act as ‘anchors’ to insert the actual quantization and dequantization functions in the model graph during the quantization process. The quant_layer converts the numbers in fp32 to int8 so that conv and relu will run in int8 format and then the dequant_layer will perform the int8 to fp32 conversion.\nSet the configuration for quantization using the get_default_qconfig function from torch.quantization. T # Select quantization schemes from # https://pytorch.org/docs/stable/quantization-support.html quantization_config = torch.quantization.get_default_qconfig(\"fbgemm\") quantized_model.qconfig = quantization_config # Print quantization configurations print(quantized_model.qconfig) “fbgemm” is a high-performance, 8-bit quantization backend that is used on CPUs. It’s currently the recommended backend for quantization when deploying on servers. The qconfig attribute of a PyTorch model is used to specify how the model should be quantized. By assigning quantization_config to quantized_model.qconfig, you’re specifying that the model should be quantized according to the “fbgemm” backend’s default configuration.\nPrepare the model for quantization with the torch.quantization.prepare() function. The model is prepared in-place. torch.quantization.prepare(quantized_model, inplace=True) Calibrate the model with the test dataset. Run the model with a few examples to calibrate the quantization process. def calibrate_model(model, loader, device=torch.device(\"cpu\")): model.to(device) model.eval() for inputs, labels in loader: inputs = inputs.to(device) labels = labels.to(device) _ = model(inputs) # Use training data for calibration. calibrate_model(model=quantized_model, loader=trainloader, device=\"cpu\") During the quantization process, floating-point values are mapped to integer values. For weights, the range is known as they’re static and don’t change post-training. However, activations can vary depending on the input to the network. Calibration, typically performed by passing a subset of the data through the model and collecting the outputs, helps estimate this range.\nConvert the prepared model to a quantized model using torch.quantization.convert(). The conversion is also done in-place. quantized_model = torch.quantization.convert(quantized_model, inplace=True) quantized_model.eval() Model Comparison The Static quantization process is now completed. We can finally compare our quantized model to the unquantized model. I have written a simple helper class to compare two models. The ModelCompare class will take two model and compare their size, accuracy, and average inference time over N iterations.\nfrom utils import ModelCompare model_compare = ModelCompare( model1=quantized_model, model1_info=\"Quantized Model\", model2=unqant_model, model2_info=\"Uquantize model\", cuda=False ) print(\"=\"*50) model_compare.compare_size() print(\"=\"*50) model_compare.compare_accuracy(dataloder=testloader) print(\"=\"*50) model_compare.compare_inference_time(N=2 , dataloder=testloader) Result:\nModel Quantized Model Size(Mb): 1.648963 Model Uquantize model Size(Mb): 6.526259 ______________________________________________ The Quantized Model is smaller by 74.73%. Accuracy of Quantized Model: 98.5 Accuracy of Uquantize model: 98.53 Average inference time of Quantize model over 2 iterations: 0.6589450836181641 Average inference time of Uquantize Model over 2 iterations: 0.7821568250656128 ________________________________________________________________________________ The Quantize model is faster by 15.75%. Dynamic Quantization Dynamic quantization quantizes the model weights and is carried out dynamically during runtime. The activations are stored in their original floating-point format.\nSince weights are quantized dynamically at runtime, it allows for more flexibility. It can be beneficial in handling cases where the range of values can vary. As activations remain in their original format, the accuracy loss is usually less than static quantization. Dynamic quantization doesn’t need calibration data, making it simpler to apply.\nHowever, as dynamic quantization only quantizes the weights, not the activations, it provides less compression and speedup than static quantization. Since weights are quantized on-the-fly during inference, it may introduce some runtime overhead.\nDynamic Quantization is pretty straightforward and requires only a single step for quantization. Let’s load our Unquantized model’s weight:\n# load the torch state state = torch.load(\"outputs/best_model.pth\") model = Net() # loading the state dict model.load_state_dict(state['model_state_dict']) Set the model to eval() mode.\nmodel.eval() Perform dynamic quantization:\nfrom utils import ModelCompare model_compare = ModelCompare( model1=quantized_model, model1_info=\"Quantized Model\", model2=model, model2_info=\"Unquantized Model\", cuda=False ) Compare the quantized model with unquantized:\nprint(\"=\"*50) model_compare.compare_size() print(\"=\"*50) model_compare.compare_accuracy(dataloder=testloader) print(\"=\"*50) model_compare.compare_inference_time(N=2 , dataloder=testloader) Output : ================================================== Model Quantized Model Size(Mb): 1.695323 Model Unquantized Model Size(Mb): 6.526259 The Quantized Model is smaller by 74.02%. ================================================== Accuracy of Quantized Model: 98.54 Accuracy of Unquantized Model: 98.53 ================================================== Average inference time of Quantized Model over 2 iterations: 0.9944213628768921 Average inference time of Unquantized Model over 2 iterations: 0.9719561338424683 The Unquantized Model is faster by 2.26%. Quantization Aware Training Static quantization enables the generation of highly efficient quantized integer models for inference. However, despite careful post-training calibration, there may be instances where the model’s accuracy is compromised to an unacceptable extent. In such cases, post-training calibration alone is insufficient for generating a quantized integer model. To account for the quantization effect, the model needs to be trained in a manner that considers quantization. Quantization-aware training addresses this by incorporating fake quantization modules, which simulate the clamping and rounding effects of integer quantization at the specific points where quantization occurs during the conversion from floating-point to quantized integer models. These fake quantization modules also monitor the scales and zero points of the weights and activations. Once the quantization awareness training is completed, the floating-point model can be readily converted to a quantized integer model using the information stored in the fake quantization modules.\nThe Quantization Aware training process borrows similar steps from static quantizaion. Let’s load our Unquantized model’s weight:\n# load the torch state state = torch.load(\"outputs/best_model.pth\") quant_network = Net() # loading the state dict quant_network.load_state_dict(state['model_state_dict']) Set the model to eval() mode.\nquant_network.eval() Check the layers that can be fused and fuse the layers. # check the layers that can be fused. fused_layers = [['conv1', 'bn1', 'relu1'], ['conv2', 'bn2', 'relu2']] # Fuse the layers torch.quantization.fuse_modules(quant_network, fused_layers, inplace=True) Wrap the fused model using QuantizedModel. class QuantizedModel(torch.nn.Module): def __init__(self, model): super().__init__() self.model_fp32 = model self.quant = torch.quantization.QuantStub() self.dequant = torch.quantization.DeQuantStub() def forward(self, x): x = self.quant(x) x = self.model_fp32(x) x = self.dequant(x) return x # Apply torch.quantization.QuantStub() and torch.quantization.QuantStub() to the inputs and outputs, respectively. quant_network = QuantizedModel(quant_network) Set the configuration for quantization # Select quantization schemes from quantization_config = torch.quantization.get_default_qconfig(\"fbgemm\") quant_network.qconfig = quantization_config # Print quantization configurations print(quant_network.qconfig) Prepare model for QAT. # prepare for QAT torch.quantization.prepare_qat(quant_network, inplace=True) Now, use our ClassifierTrainer to train the QAT model. from train_helpers import ClassifierTrainer criterion = nn.CrossEntropyLoss() optimizer = optim.SGD(quant_network.parameters(), lr=0.01) trainer = ClassifierTrainer( model= quant_network, optimizer=optimizer, criterion=criterion, train_loader=trainloader, val_loader=testloader, cuda=False, num_epochs=4 ) trainer.train(save_model=False) Epoch : 1/4: 100%|██████████| 938/938 [00:18\u003c00:00, 51.95it/s, Accuracy=77.492, Loss=0.2025] Validation Accuracy: 92.54% and Loss: 0.2595426786074023 Epoch : 2/4: 100%|██████████| 938/938 [00:16\u003c00:00, 55.84it/s, Accuracy=93.878, Loss=0.1657] Validation Accuracy: 95.98% and Loss: 0.14535175562557426 Epoch : 3/4: 100%|██████████| 938/938 [00:16\u003c00:00, 55.95it/s, Accuracy=96.143, Loss=0.0881] Validation Accuracy: 96.3% and Loss: 0.11678009550680353 Epoch : 4/4: 100%|██████████| 938/938 [00:16\u003c00:00, 55.86it/s, Accuracy=97.043, Loss=0.0618] Validation Accuracy: 97.5% and Loss: 0.08276212103383106 Finally, perform quantization on the model. quant_network.to(\"cpu\") quantized_model = torch.quantization.convert(quant_network, inplace=True) Model comparison from utils import ModelCompare model_compare = ModelCompare( model1=quantized_model, model1_info=\"Quantized Model\", model2=model, model2_info=\"UnQuantized Model\", cuda=False ) print(\"=\"*50) model_compare.compare_size() print(\"=\"*50) model_compare.compare_accuracy(dataloder=testloader) print(\"=\"*50) model_compare.compare_inference_time(N=10 , dataloder=testloader) ================================================== Model Quantized Model Size(Mb): 1.648963 Model UnQuantized Model Size(Mb): 6.526259 The Quantized Model is smaller by 74.73%. ================================================== Accuracy of Quantized Model: 97.51 Accuracy of UnQuantized Model: 98.53 ================================================== Average inference time of Quantized Model over 10 iterations: 0.6605435371398926 Average inference time of UnQuantized Model over 10 iterations: 0.6626742124557495 The Quantized Model is faster by 0.32%. Conclusion:\nThe broader implication of model quantization extends beyond just model efficiency and performance. By reducing computational needs, energy consumption, and memory requirements, we make advanced deep-learning models more accessible, especially on hardware with limited resources. This in turn paves the way for a broader and more diverse range of applications. In closing, I hope that this blog has equipped you with a better understanding of PyTorch model quantization, and inspires you to leverage these techniques in your deep learning journey. Happy coding!\nReferences:\nhttps://towardsdatascience.com/inside-quantization-aware-training-4f91c8837ead https://www.youtube.com/watch?v=hGkTFa7FSE0 https://deci.ai/quantization-and-quantization-aware-training/ https://leimao.github.io/blog/PyTorch-Quantization-Aware-Training/ https://intellabs.github.io/distiller/algo_quantization.html ",
+  "wordCount" : "2533",
+  "inLanguage": "en",
+  "datePublished": "2023-07-15T00:00:00Z",
+  "dateModified": "2023-07-15T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/quantization/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance
+    </h1>
+    <div class="post-description">
+      Dissecting Static, Dynamic and Quantization Aware Training in PyTorch.
+    </div>
+    <div class="post-meta"><span title='2023-07-15 00:00:00 +0000 UTC'>July 15, 2023</span>&nbsp;·&nbsp;12 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#introduction" aria-label="Introduction">Introduction</a></li>
+                <li>
+                    <a href="#deep-dive-into-quantization" aria-label="Deep Dive into Quantization">Deep Dive into Quantization</a><ul>
+                        
+                <li>
+                    <a href="#setting-up-the-model" aria-label="Setting Up the Model">Setting Up the Model</a></li></ul>
+                </li>
+                <li>
+                    <a href="#types-of-model-quantization" aria-label="Types of Model Quantization">Types of Model Quantization</a><ul>
+                        
+                <li>
+                    <a href="#static-quantization--post-training-static-quantization" aria-label="Static Quantization / Post-Training Static Quantization">Static Quantization / Post-Training Static Quantization</a><ul>
+                        
+                <li>
+                    <a href="#model-comparison" aria-label="Model Comparison">Model Comparison</a></li></ul>
+                </li>
+                <li>
+                    <a href="#dynamic-quantization" aria-label="Dynamic Quantization">Dynamic Quantization</a></li>
+                <li>
+                    <a href="#quantization-aware-training" aria-label="Quantization Aware Training">Quantization Aware Training</a><ul>
+                        
+                <li>
+                    <a href="#model-comparison-1" aria-label="Model comparison">Model comparison</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><img loading="lazy" src="/blogs/img/quant/quant.png" alt="png"  />
+</p>
+<h2 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h2>
+<p>In the rapidly evolving world of machine learning, one of the fundamental challenges is to make deep learning models run more efficiently. Model quantization is a strategy that allows for the reduction of memory requirements and computational needs, making the deployment of such models on hardware with constrained resources feasible and more efficient. In this blog, we&rsquo;re going to take a deep dive into the realm of PyTorch model quantization.</p>
+<p>We will first design and train a custom deep-learning architecture using PyTorch.Once our model is trained and ready, we&rsquo;ll walk through the process of applying three distinct quantization techniques: static quantization, dynamic quantization, and quantization-aware training. Each of these techniques carries its unique strengths and potential limitations, contributing differently to the model&rsquo;s performance and efficiency. Our objective will be to grasp not just the hows, but also the whys of PyTorch model quantization. We&rsquo;ll see how each strategy affects the size, speed, and accuracy of the model. So, let&rsquo;s get started!</p>
+<h2 id="deep-dive-into-quantization">Deep Dive into Quantization<a hidden class="anchor" aria-hidden="true" href="#deep-dive-into-quantization">#</a></h2>
+<p>Model quantization is the process of reducing the numerical precision of the weights and biases of a model. This process is crucial because it reduces the model size and speeds up inference, making real-time applications possible. The precision reduction is typically from floating-point numbers to integers that need less memory and computational power.</p>
+<p>Quantization in deep neural networks is a crucial optimization technique, primarily needed for reducing model size, increasing computational efficiency, enhancing energy efficiency, and ensuring hardware compatibility. By truncating the numerical precision of parameters (weights and biases), quantization can substantially shrink the model&rsquo;s memory footprint, making it easier to store and deploy. The practice also improves computational speed, making it essential for real-time applications. Moreover, it can reduce energy consumption, a critical concern for edge devices like mobile phones or IoT devices. Lastly, certain hardware accelerators are optimized for lower-precision computations, making quantization key to maximizing these optimizations. Although a trade-off exists as some accuracy may be lost due to reduced precision, various techniques are used to manage this.</p>
+<h3 id="setting-up-the-model">Setting Up the Model<a hidden class="anchor" aria-hidden="true" href="#setting-up-the-model">#</a></h3>
+<p>We&rsquo;ll use a straightforward yet effective architecture to classify the MNIST dataset, a popular dataset containing grayscale images of handwritten digits. This simple deep learning model was chosen to highlight the power and effectiveness of model quantization without the complexity of a more elaborate architecture This architecture will consist Conv2d, BatchNorm2d, MaxPool2d, Linear, and ReLU blocks.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> warnings
+</span></span><span style="display:flex;"><span>warnings<span style="color:#f92672">.</span>filterwarnings(<span style="color:#e6db74">&#34;ignore&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torchvision
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.optim <span style="color:#66d9ef">as</span> optim
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn.functional <span style="color:#66d9ef">as</span> F
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torchvision.transforms <span style="color:#66d9ef">as</span> transforms
+</span></span></code></pre></div><p>Architecture :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Net</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self):
+</span></span><span style="display:flex;"><span>        super(Net, self)<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">32</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bn1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>BatchNorm2d(<span style="color:#ae81ff">32</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>relu1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>conv2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Conv2d(<span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">64</span>, kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>bn2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>BatchNorm2d(<span style="color:#ae81ff">64</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>relu2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>maxpool <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>MaxPool2d(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">2</span>)  <span style="color:#75715e"># Initialized here</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>fc1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">7</span><span style="color:#f92672">*</span><span style="color:#ae81ff">7</span><span style="color:#f92672">*</span><span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">512</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>relu3 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>fc2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">512</span>, <span style="color:#ae81ff">10</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>bn1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>maxpool(x)  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>conv2(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>bn2(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu2(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>maxpool(x) 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>reshape(x<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>], <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>fc1(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>relu3(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>fc2(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>Dataset and Dataloaders:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>transform <span style="color:#f92672">=</span> transforms<span style="color:#f92672">.</span>Compose(
+</span></span><span style="display:flex;"><span>    [transforms<span style="color:#f92672">.</span>ToTensor(),
+</span></span><span style="display:flex;"><span>     transforms<span style="color:#f92672">.</span>Normalize((<span style="color:#ae81ff">0.5</span>,), (<span style="color:#ae81ff">0.5</span>,))])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>trainset <span style="color:#f92672">=</span> torchvision<span style="color:#f92672">.</span>datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>,
+</span></span><span style="display:flex;"><span>                                        download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, transform<span style="color:#f92672">=</span>transform)
+</span></span><span style="display:flex;"><span>trainloader <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>DataLoader(trainset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>,
+</span></span><span style="display:flex;"><span>                                          shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, pin_memory<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>testset <span style="color:#f92672">=</span> torchvision<span style="color:#f92672">.</span>datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span>                                       download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, transform<span style="color:#f92672">=</span>transform)
+</span></span><span style="display:flex;"><span>testloader <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>utils<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>DataLoader(testset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>,
+</span></span><span style="display:flex;"><span>                                         shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, num_workers<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>, pin_memory<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><p>I will be using my <code>ClassifierTrainer</code> class to train the model. This class contains methods to train the model, save the model, and plot the accuracy and loss plot. All the helper methods and classes that we will be using here can be found in my <a href="www.github.com">GitHub</a> repo.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> train_helpers <span style="color:#f92672">import</span> ClassifierTrainer,save_plots
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>unqant_model <span style="color:#f92672">=</span> Net() <span style="color:#75715e"># The unquantized model.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>criterion <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>CrossEntropyLoss()
+</span></span><span style="display:flex;"><span>optimizer <span style="color:#f92672">=</span> optim<span style="color:#f92672">.</span>SGD(unqant_model<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.01</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>trainer <span style="color:#f92672">=</span> ClassifierTrainer(
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">=</span> unqant_model,
+</span></span><span style="display:flex;"><span>    optimizer<span style="color:#f92672">=</span>optimizer,
+</span></span><span style="display:flex;"><span>    criterion<span style="color:#f92672">=</span>criterion,
+</span></span><span style="display:flex;"><span>    train_loader<span style="color:#f92672">=</span>trainloader,
+</span></span><span style="display:flex;"><span>    val_loader<span style="color:#f92672">=</span>testloader,
+</span></span><span style="display:flex;"><span>    num_epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>,
+</span></span><span style="display:flex;"><span>    cuda<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>trainer<span style="color:#f92672">.</span>train()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>save_plots(
+</span></span><span style="display:flex;"><span>    train_acc<span style="color:#f92672">=</span>trainer<span style="color:#f92672">.</span>train_accs,
+</span></span><span style="display:flex;"><span>    train_loss<span style="color:#f92672">=</span>trainer<span style="color:#f92672">.</span>train_losses,
+</span></span><span style="display:flex;"><span>    valid_acc<span style="color:#f92672">=</span>trainer<span style="color:#f92672">.</span>val_accs,
+</span></span><span style="display:flex;"><span>    valid_loss<span style="color:#f92672">=</span>trainer<span style="color:#f92672">.</span>val_losses,
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><pre tabindex="0"><code>Epoch : 1/4: 100%|██████████| 938/938 [00:17&lt;00:00, 55.13it/s, Accuracy=94.085, Loss=0.008] 
+Validation Accuracy: 97.48% and Loss: 0.08185123530910558
+Best validation loss: 0.08185123530910558
+Saving best model for epoch: 1
+
+Epoch : 2/4: 100%|██████████| 938/938 [00:15&lt;00:00, 59.86it/s, Accuracy=97.878, Loss=0.0259]
+Validation Accuracy: 98.19% and Loss: 0.0588834396460402
+Best validation loss: 0.0588834396460402
+Saving best model for epoch: 2
+
+Epoch : 3/4: 100%|██████████| 938/938 [00:15&lt;00:00, 59.80it/s, Accuracy=98.407, Loss=0.0345]
+Validation Accuracy: 98.61% and Loss: 0.04700030308571988
+Best validation loss: 0.04700030308571988
+Saving best model for epoch: 3
+
+Epoch : 4/4: 100%|██████████| 938/938 [00:15&lt;00:00, 59.63it/s, Accuracy=98.658, Loss=0.0237]
+Validation Accuracy: 98.64% and Loss: 0.043366746839516274
+Best validation loss: 0.043366746839516274
+Saving best model for epoch: 4
+</code></pre><p><img loading="lazy" src="/blogs/img/quant/accuracy.png" alt="png"  />
+
+<img loading="lazy" src="/blogs/img/quant/loss.png" alt="png"  />
+</p>
+<h2 id="types-of-model-quantization">Types of Model Quantization<a hidden class="anchor" aria-hidden="true" href="#types-of-model-quantization">#</a></h2>
+<p>Now, as our model is being trained, let&rsquo;s dive deeper into quantization. PyTorch offers three distinct quantization methods, each differentiated by how the bins for converting fp32 to int8 are established.
+Each of these three PyTorch quantization strategies has unique ways of adjusting the quantization algorithm and deciding the bins used to transform the float 32 vectors into int8. As a result, each method brings its own set of benefits and potential limitations.</p>
+<ul>
+<li>Static Quantization</li>
+<li>Dynamic Quantization</li>
+<li>Quantization-Aware Training</li>
+</ul>
+<h3 id="static-quantization--post-training-static-quantization">Static Quantization / Post-Training Static Quantization<a hidden class="anchor" aria-hidden="true" href="#static-quantization--post-training-static-quantization">#</a></h3>
+<p>Static Quantization, also known as post-training quantization, is the most common form of quantization. It&rsquo;s applied after the model training is complete. Here, both weights and activations of the model are quantised to lower precision. The scales and zero points for static quantization are calculated before inference using a representative dataset, in contrast to dynamic quantization, where they were gathered during inference.</p>
+<p>Since the quantization process happens offline after training, there&rsquo;s no runtime overhead for quantizing weights and activations. Quantized models are usually compatible with hardware accelerators designed for low-precision computation, enabling even faster inference.</p>
+<p>However, Converting from high-precision weights and activations to lower precision can lead to a slight drop in model accuracy. Also, you need representative data for the calibration step in static quantization. It&rsquo;s crucial to select a dataset that closely resembles the data the model will see in production.</p>
+<p><strong>Steps for Static Quantization:</strong></p>
+<hr>
+<ol>
+<li>Set the model to evaluation mode with model.eval(). This is important as certain layers like dropout and batchnorm behave differently during training and evaluation.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> copy
+</span></span><span style="display:flex;"><span>unqant_model_copy <span style="color:#f92672">=</span> copy<span style="color:#f92672">.</span>deepcopy(unqant_model)
+</span></span><span style="display:flex;"><span>unqant_model_copy<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Net(
+</span></span><span style="display:flex;"><span>  (conv1): Conv2d(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">32</span>, kernel_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), stride<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>), padding<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>  (bn1): BatchNorm2d(<span style="color:#ae81ff">32</span>, eps<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-05</span>, momentum<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>, affine<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, track_running_stats<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (relu1): ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (conv2): Conv2d(<span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">64</span>, kernel_size<span style="color:#f92672">=</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">3</span>), stride<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>), padding<span style="color:#f92672">=</span>(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>  (bn2): BatchNorm2d(<span style="color:#ae81ff">64</span>, eps<span style="color:#f92672">=</span><span style="color:#ae81ff">1e-05</span>, momentum<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>, affine<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, track_running_stats<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (relu2): ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (maxpool): MaxPool2d(kernel_size<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, stride<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, padding<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, dilation<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, ceil_mode<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>  (fc1): Linear(in_features<span style="color:#f92672">=</span><span style="color:#ae81ff">3136</span>, out_features<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (relu3): ReLU(inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>  (fc2): Linear(in_features<span style="color:#f92672">=</span><span style="color:#ae81ff">512</span>, out_features<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><hr>
+<ol start="2">
+<li>Define the list of layers in your model architecture that can be fused together for the purpose of quantization.
+When performing quantization, certain groups of operations can be replaced by single operations that are equivalent but more computationally efficient. For example, a convolution followed by a batch normalization, followed by a ReLU operation (Conv -&gt; BatchNorm -&gt; ReLU), can be replaced by a single fused ConvBnReLU operation. We will use <strong>torch.quantization.fuse_modules</strong> to fuse a list of modules into a single module.
+This has several advantages:</li>
+</ol>
+<ul>
+<li>
+<p><strong>Performance Improvement</strong>: By fusing multiple operations into one, the fused operation can be faster than the individual operations due to fewer function calls and less data movement.</p>
+</li>
+<li>
+<p><strong>Memory Efficiency</strong>: Fused operations reduce the need for intermediate results. This can significantly reduce memory usage, especially for large models and inputs.</p>
+</li>
+<li>
+<p><strong>Simplified Model Graph</strong>: The process of fusing operations can simplify the model graph, making it easier to understand and optimize.</p>
+</li>
+</ul>
+<p>Our model architecture contains 2 (Conv -&gt; BatchNorm -&gt; ReLU) blocks. We can combine these blocks into a ConvBnReLU block.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>fused_layers <span style="color:#f92672">=</span> [[<span style="color:#e6db74">&#39;conv1&#39;</span>, <span style="color:#e6db74">&#39;bn1&#39;</span>, <span style="color:#e6db74">&#39;relu1&#39;</span>], [<span style="color:#e6db74">&#39;conv2&#39;</span>, <span style="color:#e6db74">&#39;bn2&#39;</span>, <span style="color:#e6db74">&#39;relu2&#39;</span>]]
+</span></span><span style="display:flex;"><span>fused_model <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>fuse_modules(unqant_model_copy, fused_layers, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><hr>
+<ol start="3">
+<li>Next, we will use the <code>QuantizedModel</code> wrapper class to wrap our model.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QuantizedModel</span>(torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, model):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model_fp32 <span style="color:#f92672">=</span> model
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>quant <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>QuantStub()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dequant <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>DeQuantStub()
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>quant(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model_fp32(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dequant(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>The essence of this code is to add quantization and dequantization stubs to the model, which will act as &lsquo;anchors&rsquo; to insert the actual quantization and dequantization functions in the model graph during the quantization process. The quant_layer converts the numbers in fp32 to int8 so that conv and relu will run in int8 format and then the dequant_layer will perform the int8 to fp32 conversion.</p>
+<hr>
+<ol start="4">
+<li>Set the configuration for quantization using the get_default_qconfig function from torch.quantization. T</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Select quantization schemes from </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># https://pytorch.org/docs/stable/quantization-support.html</span>
+</span></span><span style="display:flex;"><span>quantization_config <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>get_default_qconfig(<span style="color:#e6db74">&#34;fbgemm&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>quantized_model<span style="color:#f92672">.</span>qconfig <span style="color:#f92672">=</span> quantization_config
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Print quantization configurations</span>
+</span></span><span style="display:flex;"><span>print(quantized_model<span style="color:#f92672">.</span>qconfig)
+</span></span></code></pre></div><p>&ldquo;fbgemm&rdquo; is a high-performance, 8-bit quantization backend that is used on CPUs. It&rsquo;s currently the recommended backend for quantization when deploying on servers. The qconfig attribute of a PyTorch model is used to specify how the model should be quantized. By assigning quantization_config to quantized_model.qconfig, you&rsquo;re specifying that the model should be quantized according to the &ldquo;fbgemm&rdquo; backend&rsquo;s default configuration.</p>
+<hr>
+<ol start="5">
+<li>Prepare the model for quantization with the torch.quantization.prepare() function. The model is prepared in-place.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>prepare(quantized_model, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><hr>
+<ol start="6">
+<li>Calibrate the model with the test dataset. Run the model with a few examples to calibrate the quantization process.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">calibrate_model</span>(model, loader, device<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>device(<span style="color:#e6db74">&#34;cpu&#34;</span>)):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>eval()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> inputs, labels <span style="color:#f92672">in</span> loader:
+</span></span><span style="display:flex;"><span>        inputs <span style="color:#f92672">=</span> inputs<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>        labels <span style="color:#f92672">=</span> labels<span style="color:#f92672">.</span>to(device)
+</span></span><span style="display:flex;"><span>        _ <span style="color:#f92672">=</span> model(inputs)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Use training data for calibration.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>calibrate_model(model<span style="color:#f92672">=</span>quantized_model, loader<span style="color:#f92672">=</span>trainloader, device<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cpu&#34;</span>)
+</span></span></code></pre></div><p>During the quantization process, floating-point values are mapped to integer values. For weights, the range is known as they&rsquo;re static and don&rsquo;t change post-training. However, activations can vary depending on the input to the network. Calibration, typically performed by passing a subset of the data through the model and collecting the outputs, helps estimate this range.</p>
+<hr>
+<ol start="7">
+<li>Convert the prepared model to a quantized model using torch.quantization.convert(). The conversion is also done in-place.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>quantized_model <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>convert(quantized_model, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>quantized_model<span style="color:#f92672">.</span>eval()
+</span></span></code></pre></div><hr>
+<h4 id="model-comparison">Model Comparison<a hidden class="anchor" aria-hidden="true" href="#model-comparison">#</a></h4>
+<p>The Static quantization process is now completed. We can finally compare our quantized model to the unquantized model.
+I have written a simple helper class to compare two models. The <code>ModelCompare</code> class will take two model and compare their size, accuracy, and average inference time over N iterations.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> ModelCompare
+</span></span><span style="display:flex;"><span>model_compare <span style="color:#f92672">=</span> ModelCompare(
+</span></span><span style="display:flex;"><span>    model1<span style="color:#f92672">=</span>quantized_model,
+</span></span><span style="display:flex;"><span>    model1_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Quantized Model&#34;</span>,
+</span></span><span style="display:flex;"><span>    model2<span style="color:#f92672">=</span>unqant_model,
+</span></span><span style="display:flex;"><span>    model2_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Uquantize model&#34;</span>,
+</span></span><span style="display:flex;"><span>    cuda<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_size()
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_accuracy(dataloder<span style="color:#f92672">=</span>testloader)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_inference_time(N<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> , dataloder<span style="color:#f92672">=</span>testloader)
+</span></span></code></pre></div><p>Result:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>Model Quantized Model Size(Mb): <span style="color:#ae81ff">1.648963</span>
+</span></span><span style="display:flex;"><span>Model Uquantize model Size(Mb): <span style="color:#ae81ff">6.526259</span>
+</span></span><span style="display:flex;"><span>______________________________________________
+</span></span><span style="display:flex;"><span>The Quantized Model <span style="color:#f92672">is</span> smaller by <span style="color:#ae81ff">74.73</span><span style="color:#f92672">%.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Accuracy of Quantized Model: <span style="color:#ae81ff">98.5</span>
+</span></span><span style="display:flex;"><span>Accuracy of Uquantize model: <span style="color:#ae81ff">98.53</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Average inference time of Quantize model over <span style="color:#ae81ff">2</span> iterations: <span style="color:#ae81ff">0.6589450836181641</span>
+</span></span><span style="display:flex;"><span>Average inference time of Uquantize Model over <span style="color:#ae81ff">2</span> iterations: <span style="color:#ae81ff">0.7821568250656128</span>
+</span></span><span style="display:flex;"><span>________________________________________________________________________________
+</span></span><span style="display:flex;"><span>The Quantize model <span style="color:#f92672">is</span> faster by <span style="color:#ae81ff">15.75</span><span style="color:#f92672">%.</span>
+</span></span></code></pre></div><h3 id="dynamic-quantization">Dynamic Quantization<a hidden class="anchor" aria-hidden="true" href="#dynamic-quantization">#</a></h3>
+<p>Dynamic quantization quantizes the model weights and is carried out dynamically during runtime. The activations are stored in their original floating-point format.</p>
+<p>Since weights are quantized dynamically at runtime, it allows for more flexibility. It can be beneficial in handling cases where the range of values can vary. As activations remain in their original format, the accuracy loss is usually less than static quantization. Dynamic quantization doesn&rsquo;t need calibration data, making it simpler to apply.</p>
+<p>However, as dynamic quantization only quantizes the weights, not the activations, it provides less compression and speedup than static quantization. Since weights are quantized on-the-fly during inference, it may introduce some runtime overhead.</p>
+<p>Dynamic Quantization is pretty straightforward and requires only a single step for quantization. Let&rsquo;s load our Unquantized model&rsquo;s weight:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># load the torch state </span>
+</span></span><span style="display:flex;"><span>state <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>load(<span style="color:#e6db74">&#34;outputs/best_model.pth&#34;</span>)
+</span></span><span style="display:flex;"><span>model <span style="color:#f92672">=</span> Net()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># loading the state dict</span>
+</span></span><span style="display:flex;"><span>model<span style="color:#f92672">.</span>load_state_dict(state[<span style="color:#e6db74">&#39;model_state_dict&#39;</span>])
+</span></span></code></pre></div><p>Set the model to <code>eval()</code> mode.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>model<span style="color:#f92672">.</span>eval()
+</span></span></code></pre></div><p>Perform dynamic quantization:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> ModelCompare
+</span></span><span style="display:flex;"><span>model_compare <span style="color:#f92672">=</span> ModelCompare(
+</span></span><span style="display:flex;"><span>    model1<span style="color:#f92672">=</span>quantized_model,
+</span></span><span style="display:flex;"><span>    model1_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Quantized Model&#34;</span>,
+</span></span><span style="display:flex;"><span>    model2<span style="color:#f92672">=</span>model,
+</span></span><span style="display:flex;"><span>    model2_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Unquantized Model&#34;</span>,
+</span></span><span style="display:flex;"><span>    cuda<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Compare the quantized model with unquantized:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_size()
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_accuracy(dataloder<span style="color:#f92672">=</span>testloader)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_inference_time(N<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> , dataloder<span style="color:#f92672">=</span>testloader)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Output : 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">==================================================</span>
+</span></span><span style="display:flex;"><span>Model Quantized Model Size(Mb): <span style="color:#ae81ff">1.695323</span>
+</span></span><span style="display:flex;"><span>Model Unquantized Model Size(Mb): <span style="color:#ae81ff">6.526259</span>
+</span></span><span style="display:flex;"><span>The Quantized Model <span style="color:#f92672">is</span> smaller by <span style="color:#ae81ff">74.02</span><span style="color:#f92672">%.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">==================================================</span>
+</span></span><span style="display:flex;"><span>Accuracy of Quantized Model: <span style="color:#ae81ff">98.54</span>
+</span></span><span style="display:flex;"><span>Accuracy of Unquantized Model: <span style="color:#ae81ff">98.53</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">==================================================</span>
+</span></span><span style="display:flex;"><span>Average inference time of Quantized Model over <span style="color:#ae81ff">2</span> iterations: <span style="color:#ae81ff">0.9944213628768921</span>
+</span></span><span style="display:flex;"><span>Average inference time of Unquantized Model over <span style="color:#ae81ff">2</span> iterations: <span style="color:#ae81ff">0.9719561338424683</span>
+</span></span><span style="display:flex;"><span>The Unquantized Model <span style="color:#f92672">is</span> faster by <span style="color:#ae81ff">2.26</span><span style="color:#f92672">%.</span>
+</span></span></code></pre></div><h3 id="quantization-aware-training">Quantization Aware Training<a hidden class="anchor" aria-hidden="true" href="#quantization-aware-training">#</a></h3>
+<p>Static quantization enables the generation of highly efficient quantized integer models for inference. However, despite careful post-training calibration, there may be instances where the model&rsquo;s accuracy is compromised to an unacceptable extent. In such cases, post-training calibration alone is insufficient for generating a quantized integer model. To account for the quantization effect, the model needs to be trained in a manner that considers quantization. Quantization-aware training addresses this by incorporating fake quantization modules, which simulate the clamping and rounding effects of integer quantization at the specific points where quantization occurs during the conversion from floating-point to quantized integer models. These fake quantization modules also monitor the scales and zero points of the weights and activations. Once the quantization awareness training is completed, the floating-point model can be readily converted to a quantized integer model using the information stored in the fake quantization modules.</p>
+<p>The Quantization Aware training process borrows similar steps from static quantizaion.
+Let&rsquo;s load our Unquantized model&rsquo;s weight:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># load the torch state </span>
+</span></span><span style="display:flex;"><span>state <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>load(<span style="color:#e6db74">&#34;outputs/best_model.pth&#34;</span>)
+</span></span><span style="display:flex;"><span>quant_network <span style="color:#f92672">=</span> Net()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># loading the state dict</span>
+</span></span><span style="display:flex;"><span>quant_network<span style="color:#f92672">.</span>load_state_dict(state[<span style="color:#e6db74">&#39;model_state_dict&#39;</span>])
+</span></span></code></pre></div><p>Set the model to <code>eval()</code> mode.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>quant_network<span style="color:#f92672">.</span>eval()
+</span></span></code></pre></div><ol>
+<li>Check the layers that can be fused and fuse the layers.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># check the layers that can be fused.</span>
+</span></span><span style="display:flex;"><span>fused_layers <span style="color:#f92672">=</span> [[<span style="color:#e6db74">&#39;conv1&#39;</span>, <span style="color:#e6db74">&#39;bn1&#39;</span>, <span style="color:#e6db74">&#39;relu1&#39;</span>], [<span style="color:#e6db74">&#39;conv2&#39;</span>, <span style="color:#e6db74">&#39;bn2&#39;</span>, <span style="color:#e6db74">&#39;relu2&#39;</span>]]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Fuse the layers</span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>fuse_modules(quant_network, fused_layers, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><ol start="2">
+<li>Wrap the fused model using <code>QuantizedModel</code>.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QuantizedModel</span>(torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, model):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model_fp32 <span style="color:#f92672">=</span> model
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>quant <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>QuantStub()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>dequant <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>DeQuantStub()
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>quant(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model_fp32(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>dequant(x)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Apply torch.quantization.QuantStub() and torch.quantization.QuantStub() to the inputs and outputs, respectively.</span>
+</span></span><span style="display:flex;"><span>quant_network <span style="color:#f92672">=</span> QuantizedModel(quant_network)
+</span></span></code></pre></div><ol start="3">
+<li>Set the configuration for quantization</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Select quantization schemes from </span>
+</span></span><span style="display:flex;"><span>quantization_config <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>get_default_qconfig(<span style="color:#e6db74">&#34;fbgemm&#34;</span>)
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>quant_network<span style="color:#f92672">.</span>qconfig <span style="color:#f92672">=</span> quantization_config
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Print quantization configurations</span>
+</span></span><span style="display:flex;"><span>print(quant_network<span style="color:#f92672">.</span>qconfig)
+</span></span></code></pre></div><ol start="4">
+<li>Prepare model for QAT.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># prepare for QAT</span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>prepare_qat(quant_network, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><ol start="5">
+<li>Now, use our <code>ClassifierTrainer</code> to train the QAT model.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> train_helpers <span style="color:#f92672">import</span> ClassifierTrainer
+</span></span><span style="display:flex;"><span>criterion <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>CrossEntropyLoss()
+</span></span><span style="display:flex;"><span>optimizer <span style="color:#f92672">=</span> optim<span style="color:#f92672">.</span>SGD(quant_network<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span><span style="color:#ae81ff">0.01</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>trainer <span style="color:#f92672">=</span> ClassifierTrainer(
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">=</span> quant_network,
+</span></span><span style="display:flex;"><span>    optimizer<span style="color:#f92672">=</span>optimizer, 
+</span></span><span style="display:flex;"><span>    criterion<span style="color:#f92672">=</span>criterion,
+</span></span><span style="display:flex;"><span>    train_loader<span style="color:#f92672">=</span>trainloader,
+</span></span><span style="display:flex;"><span>    val_loader<span style="color:#f92672">=</span>testloader,
+</span></span><span style="display:flex;"><span>    cuda<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span>    num_epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>trainer<span style="color:#f92672">.</span>train(save_model<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span></code></pre></div><pre tabindex="0"><code>Epoch : 1/4: 100%|██████████| 938/938 [00:18&lt;00:00, 51.95it/s, Accuracy=77.492, Loss=0.2025]
+Validation Accuracy: 92.54% and Loss: 0.2595426786074023
+Epoch : 2/4: 100%|██████████| 938/938 [00:16&lt;00:00, 55.84it/s, Accuracy=93.878, Loss=0.1657]
+Validation Accuracy: 95.98% and Loss: 0.14535175562557426
+Epoch : 3/4: 100%|██████████| 938/938 [00:16&lt;00:00, 55.95it/s, Accuracy=96.143, Loss=0.0881]
+Validation Accuracy: 96.3% and Loss: 0.11678009550680353
+Epoch : 4/4: 100%|██████████| 938/938 [00:16&lt;00:00, 55.86it/s, Accuracy=97.043, Loss=0.0618]
+Validation Accuracy: 97.5% and Loss: 0.08276212103383106
+</code></pre><ol start="6">
+<li>Finally, perform quantization on the model.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>quant_network<span style="color:#f92672">.</span>to(<span style="color:#e6db74">&#34;cpu&#34;</span>)
+</span></span><span style="display:flex;"><span>quantized_model <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>quantization<span style="color:#f92672">.</span>convert(quant_network, inplace<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><h4 id="model-comparison-1">Model comparison<a hidden class="anchor" aria-hidden="true" href="#model-comparison-1">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> ModelCompare
+</span></span><span style="display:flex;"><span>model_compare <span style="color:#f92672">=</span> ModelCompare(
+</span></span><span style="display:flex;"><span>    model1<span style="color:#f92672">=</span>quantized_model,
+</span></span><span style="display:flex;"><span>    model1_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Quantized Model&#34;</span>,
+</span></span><span style="display:flex;"><span>    model2<span style="color:#f92672">=</span>model,
+</span></span><span style="display:flex;"><span>    model2_info<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;UnQuantized Model&#34;</span>,
+</span></span><span style="display:flex;"><span>    cuda<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_size()
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_accuracy(dataloder<span style="color:#f92672">=</span>testloader)
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">&#34;=&#34;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">50</span>)
+</span></span><span style="display:flex;"><span>model_compare<span style="color:#f92672">.</span>compare_inference_time(N<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span> , dataloder<span style="color:#f92672">=</span>testloader)
+</span></span></code></pre></div><pre tabindex="0"><code>==================================================
+Model Quantized Model Size(Mb): 1.648963
+Model UnQuantized Model Size(Mb): 6.526259
+The Quantized Model is smaller by 74.73%.
+==================================================
+Accuracy of Quantized Model: 97.51
+Accuracy of UnQuantized Model: 98.53
+==================================================
+Average inference time of Quantized Model over 10 iterations: 0.6605435371398926
+Average inference time of UnQuantized Model over 10 iterations: 0.6626742124557495
+The Quantized Model is faster by 0.32%.
+</code></pre><p>Conclusion:</p>
+<p>The broader implication of model quantization extends beyond just model efficiency and performance. By reducing computational needs, energy consumption, and memory requirements, we make advanced deep-learning models more accessible, especially on hardware with limited resources. This in turn paves the way for a broader and more diverse range of applications.
+In closing, I hope that this blog has equipped you with a better understanding of PyTorch model quantization, and inspires you to leverage these techniques in your deep learning journey. Happy coding!</p>
+<p>References:</p>
+<ul>
+<li><a href="https://towardsdatascience.com/inside-quantization-aware-training-4f91c8837ead">https://towardsdatascience.com/inside-quantization-aware-training-4f91c8837ead</a></li>
+<li><a href="https://www.youtube.com/watch?v=hGkTFa7FSE0">https://www.youtube.com/watch?v=hGkTFa7FSE0</a></li>
+<li><a href="https://deci.ai/quantization-and-quantization-aware-training/">https://deci.ai/quantization-and-quantization-aware-training/</a></li>
+<li><a href="https://leimao.github.io/blog/PyTorch-Quantization-Aware-Training/">https://leimao.github.io/blog/PyTorch-Quantization-Aware-Training/</a></li>
+<li><a href="https://intellabs.github.io/distiller/algo_quantization.html">https://intellabs.github.io/distiller/algo_quantization.html</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://R4j4n.github.io/blogs/posts/lora/">
+    <span class="title">Next »</span>
+    <br>
+    <span>LORA(Low Rank Adaptation) : A Deeper Dive</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
