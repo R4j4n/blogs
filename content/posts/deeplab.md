@@ -839,7 +839,5 @@ display_cv2(blurred)
 
 
     
-![png](/blogs/img/deeplab/inference_8_0.png)
-    
 
 
