@@ -1,6 +1,6 @@
 +++
 author = "Rajan Ghimire"
-title = "PyTorch Model Quantization: Optimizing Architectures for Enhanced Performance"
+title = "Quantization in PyTorch: Optimizing Architectures for Enhanced Performance"
 date = "2023-07-15"
 description = "Dissecting Static, Dynamic and Quantization Aware Training in PyTorch."
 tags = [
@@ -104,7 +104,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64,
                                          shuffle=False, num_workers=16, pin_memory=True)
 
 ```
-I will be using my ```ClassifierTrainer``` class to train the model. This class contains methods to train the model, save the model, and plot the accuracy and loss plot. All the helper methods and classes that we will be using here can be found in my [GitHub](www.github.com) repo.
+I will be using my ```ClassifierTrainer``` class to train the model. This class contains methods to train the model, save the model, and plot the accuracy and loss plot. All the helper methods and classes that we will be using here can be found in my [GitHub](https://github.com/R4j4n/Quantization-in-PyTorch) repo.
 
 
 ```python 
@@ -185,7 +185,7 @@ However, Converting from high-precision weights and activations to lower precisi
 
 **Steps for Static Quantization:**
 * * * 
-1. Set the model to evaluation mode with model.eval(). This is important as certain layers like dropout and batchnorm behave differently during training and evaluation. 
+Step 1. Set the model to evaluation mode with model.eval(). This is important as certain layers like dropout and batchnorm behave differently during training and evaluation. 
 
 ```python 
 
@@ -209,7 +209,7 @@ Net(
 
 ```
 * * * 
-2. Define the list of layers in your model architecture that can be fused together for the purpose of quantization.
+Step 2. Define the list of layers in your model architecture that can be fused together for the purpose of quantization.
 When performing quantization, certain groups of operations can be replaced by single operations that are equivalent but more computationally efficient. For example, a convolution followed by a batch normalization, followed by a ReLU operation (Conv -> BatchNorm -> ReLU), can be replaced by a single fused ConvBnReLU operation. We will use **torch.quantization.fuse_modules** to fuse a list of modules into a single module.
 This has several advantages:
 - **Performance Improvement**: By fusing multiple operations into one, the fused operation can be faster than the individual operations due to fewer function calls and less data movement.
@@ -227,7 +227,7 @@ fused_model = torch.quantization.fuse_modules(unqant_model_copy, fused_layers, i
 
 ```
 * * * 
-3. Next, we will use the ```QuantizedModel``` wrapper class to wrap our model.
+Step 3. Next, we will use the ```QuantizedModel``` wrapper class to wrap our model.
 ```python 
 class QuantizedModel(torch.nn.Module):
     def __init__(self, model):
@@ -246,7 +246,7 @@ class QuantizedModel(torch.nn.Module):
 The essence of this code is to add quantization and dequantization stubs to the model, which will act as 'anchors' to insert the actual quantization and dequantization functions in the model graph during the quantization process. The quant_layer converts the numbers in fp32 to int8 so that conv and relu will run in int8 format and then the dequant_layer will perform the int8 to fp32 conversion.
 
 * * * 
-4. Set the configuration for quantization using the get_default_qconfig function from torch.quantization. T
+Step 4. Set the configuration for quantization using the get_default_qconfig function from torch.quantization. T
 ```python
 # Select quantization schemes from 
 # https://pytorch.org/docs/stable/quantization-support.html
@@ -260,13 +260,13 @@ print(quantized_model.qconfig)
 "fbgemm" is a high-performance, 8-bit quantization backend that is used on CPUs. It's currently the recommended backend for quantization when deploying on servers. The qconfig attribute of a PyTorch model is used to specify how the model should be quantized. By assigning quantization_config to quantized_model.qconfig, you're specifying that the model should be quantized according to the "fbgemm" backend's default configuration.
 
 * * * 
-5. Prepare the model for quantization with the torch.quantization.prepare() function. The model is prepared in-place.
+Step 5. Prepare the model for quantization with the torch.quantization.prepare() function. The model is prepared in-place.
 ```python
 torch.quantization.prepare(quantized_model, inplace=True)
 
 ```
 * * * 
-6. Calibrate the model with the test dataset. Run the model with a few examples to calibrate the quantization process.
+Step 6. Calibrate the model with the test dataset. Run the model with a few examples to calibrate the quantization process.
 ```python
 def calibrate_model(model, loader, device=torch.device("cpu")):
 
@@ -286,7 +286,7 @@ calibrate_model(model=quantized_model, loader=trainloader, device="cpu")
 ```
 During the quantization process, floating-point values are mapped to integer values. For weights, the range is known as they're static and don't change post-training. However, activations can vary depending on the input to the network. Calibration, typically performed by passing a subset of the data through the model and collecting the outputs, helps estimate this range.
 * * * 
-7. Convert the prepared model to a quantized model using torch.quantization.convert(). The conversion is also done in-place.
+Step 7. Convert the prepared model to a quantized model using torch.quantization.convert(). The conversion is also done in-place.
 
 ```python 
 quantized_model = torch.quantization.convert(quantized_model, inplace=True)
@@ -417,7 +417,8 @@ Set the model to ```eval()``` mode.
 ```python
 quant_network.eval()
 ```
-1. Check the layers that can be fused and fuse the layers.
+* * *
+Step 1. Check the layers that can be fused and fuse the layers.
 ```python
 # check the layers that can be fused.
 fused_layers = [['conv1', 'bn1', 'relu1'], ['conv2', 'bn2', 'relu2']]
@@ -427,8 +428,8 @@ torch.quantization.fuse_modules(quant_network, fused_layers, inplace=True)
 
 
 ```
-
-2. Wrap the fused model using ```QuantizedModel```.
+* * *
+Step 2. Wrap the fused model using ```QuantizedModel```.
 
 ```python
 class QuantizedModel(torch.nn.Module):
@@ -448,7 +449,8 @@ class QuantizedModel(torch.nn.Module):
 quant_network = QuantizedModel(quant_network)
 
 ```
-3. Set the configuration for quantization 
+* * *
+Step 3. Set the configuration for quantization 
 ```python
 
 # Select quantization schemes from 
@@ -460,13 +462,15 @@ quant_network.qconfig = quantization_config
 print(quant_network.qconfig)
 
 ```
-4. Prepare model for QAT.
+* * *
+Step 4. Prepare model for QAT.
 ```python 
 # prepare for QAT
 torch.quantization.prepare_qat(quant_network, inplace=True)
 
 ```
-5. Now, use our ```ClassifierTrainer``` to train the QAT model.
+* * *
+Step 5. Now, use our ```ClassifierTrainer``` to train the QAT model.
    
 ```python
 
@@ -498,11 +502,13 @@ Validation Accuracy: 96.3% and Loss: 0.11678009550680353
 Epoch : 4/4: 100%|██████████| 938/938 [00:16<00:00, 55.86it/s, Accuracy=97.043, Loss=0.0618]
 Validation Accuracy: 97.5% and Loss: 0.08276212103383106
 ```
-6. Finally, perform quantization on the model.
+* * *
+Step 6. Finally, perform quantization on the model.
 ```python 
 quant_network.to("cpu")
 quantized_model = torch.quantization.convert(quant_network, inplace=True)
 ```
+* * * 
 #### Model comparison 
 
 ```python 
@@ -543,6 +549,8 @@ Conclusion:
 The broader implication of model quantization extends beyond just model efficiency and performance. By reducing computational needs, energy consumption, and memory requirements, we make advanced deep-learning models more accessible, especially on hardware with limited resources. This in turn paves the way for a broader and more diverse range of applications.
 In closing, I hope that this blog has equipped you with a better understanding of PyTorch model quantization, and inspires you to leverage these techniques in your deep learning journey. Happy coding! 
 
+
+[GITHUB LINK](https://github.com/R4j4n/Quantization-in-PyTorch)
 
 References: 
 - https://towardsdatascience.com/inside-quantization-aware-training-4f91c8837ead
