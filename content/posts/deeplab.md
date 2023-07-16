@@ -836,8 +836,13 @@ blurred = segmenter.segement(img,operation_type="blur")
 ```python
 display_cv2(blurred)
 ```
+![png](/blogs/img/deeplab//inference_8_0.png)
 
-
+References:
+- https://medium.com/swlh/review-deeplabv3-semantic-segmentation-52c00ddbf28d
+- https://towardsdatascience.com/review-deeplabv3-atrous-convolution-semantic-segmentation-6d818bfd1d74
+- https://www.kaggle.com/code/balraj98/deeplabv3-resnet101-for-segmentation-pytorch
     
 
-
+Major Credit for Atrous convolution:
+- https://towardsdatascience.com/a-primer-on-atrous-convolutions-and-depth-wise-separable-convolutions-443b106919f5#:~:text=Put%20simply%2C%20atrous%20convolution%20is,dilated%20convolution%20layers%20are%20sparse.
