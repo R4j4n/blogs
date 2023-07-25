@@ -6,7 +6,16 @@
     <description>Recent content in PyTorch on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/pytorch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Semantic Segmentation from scratch in PyTorch.</title>
+      <link>https://R4j4n.github.io/blogs/posts/deeplab/</link>
+      <pubDate>Tue, 25 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/deeplab/</guid>
+      <description>Custom person segmenter from scratch.</description>
+    </item>
+    
     <item>
       <title>Quantization in PyTorch: Optimizing Architectures for Enhanced Performance</title>
       <link>https://R4j4n.github.io/blogs/posts/quantization/</link>
@@ -23,15 +32,6 @@
       
       <guid>https://R4j4n.github.io/blogs/posts/lora/</guid>
       <description>Exploring and Implementating LoRA in PyTorch.</description>
-    </item>
-    
-    <item>
-      <title>Semantic Segmentation from scratch in PyTorch.</title>
-      <link>https://R4j4n.github.io/blogs/posts/deeplab/</link>
-      <pubDate>Mon, 06 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://R4j4n.github.io/blogs/posts/deeplab/</guid>
-      <description>Your custom background remover and background blur from scratch.</description>
     </item>
     
     <item>

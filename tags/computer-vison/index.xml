@@ -6,14 +6,14 @@
     <description>Recent content in Computer Vison on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/computer-vison/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/computer-vison/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Semantic Segmentation from scratch in PyTorch.</title>
       <link>https://R4j4n.github.io/blogs/posts/deeplab/</link>
-      <pubDate>Mon, 06 Mar 2023 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 25 Jul 2023 00:00:00 +0000</pubDate>
       
       <guid>https://R4j4n.github.io/blogs/posts/deeplab/</guid>
-      <description>Your custom background remover and background blur from scratch.</description>
+      <description>Custom person segmenter from scratch.</description>
     </item>
     
     <item>
