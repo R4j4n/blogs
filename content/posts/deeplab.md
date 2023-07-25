@@ -1,8 +1,8 @@
 +++
 author = "Rajan Ghimire"
 title = "Semantic Segmentation from scratch in PyTorch."
-date = "2023-03-06"
-description = "Your custom background remover and background blur from scratch."
+date = "2023-07-25"
+description = "Custom person segmenter from scratch."
 tags = [
     "Computer Vison",
     "PyTorch",
@@ -10,7 +10,7 @@ tags = [
 ]
 
 +++
-In this blog we are going to use DeepLabv3+ architecture to build our person segmentation pipeline entirely from scratch.
+In this blog, we will use DeepLabv3+ architecture to build our person segmentation pipeline entirely from scratch.
 ![What We are going to build.](/blogs/img/deeplab/overall.png)
 
 ## ****DeepLabv3+ Architecture:****
@@ -25,20 +25,20 @@ The DeepLabv3+ was introduced in “****Encoder-Decoder with Atrous Separable Co
 
 ## ****Atrous(Dilated) Convolution:****
 
-![fig 1: 3x3 Atrous(dilated) Convolution in action](https://miro.medium.com/max/640/1*SVkgHoFoiMZkjy54zM_SUw.gif)
+![              fig 1: 3x3 Atrous(dilated) Convolution in action](https://miro.medium.com/max/640/1*SVkgHoFoiMZkjy54zM_SUw.gif)
 
 
-fig 1: 3x3 Atrous(dilated) Convolution in action
+            fig 1: 3x3 Atrous(dilated) Convolution in action
 
-Dilated convolutions introduce another parameter to the convolution layers called **dilation rate ‘r’**. The dilation factor controls the spacing between the kernel points. The convolution performed in this way is also known as the à trous algorithm. By controlling the rate parameter, we can arbitrarily control the receptive fields of the convolution layer. The receptive field is defined as the size of the region of the input feature map that produces each output element. This allows the convolution filter to look at larger areas of the input(receptive field) without a decrease in the spatial resolution or increase in the kernel size. 
+Dilated convolutions introduce another parameter to the convolution layers called **dilation rate ‘r’**. The dilation factor controls the spacing between the kernel points. The convolution performed this way is also known as the à trous algorithm. By controlling the rate parameter, we can arbitrarily control the receptive fields of the convolution layer. The receptive field is defined as the size of the region of the input feature map that produces each output element. This allows the convolution filter to look at larger areas of the input(receptive field) without decreasing the spatial resolution or increasing kernel size. 
 
 ![                Fig. 1.2: Standard vs Dilated Kernel](https://miro.medium.com/max/640/1*xBz2R6qoArKjkthYzKLZMQ.png)
 
                 Fig. 1.2: Standard vs Dilated Kernel
 
-Atrous convolution is akin to the standard convolution except that the weights of an atrous convolution kernel are spaced **r** locations apart, i.e., the kernel of dilated convolution layers is sparse.
+Atrous convolution is akin to the standard convolution except that the weights of an atrous convolution kernel are spaced **r** locations apart, i.e., the kernel of dilated convolution layers is sparse.
 
-The Convolutions and max-pooling used in deep convolutions and the max-pooling layer have a disadvantage. At each step, the spatial resolution of the feature map is halved. Implanting or up-sampling the original feature map onto the original images results in sparse feature extraction. 
+The Convolutions and max-pooling used in deep convolutions and the max-pooling layer have disadvantages. At each step, the spatial resolution of the feature map is halved. Implanting or up-sampling the original feature map onto the original images results in sparse feature extraction. 
 
 ![https://miro.medium.com/max/720/1*dxK0C3WBBqk_eF0k8KRScQ.png](https://miro.medium.com/max/720/1*dxK0C3WBBqk_eF0k8KRScQ.png)
 
@@ -231,13 +231,10 @@ class Deeplabv3Plus(nn.Module):
         return x_out
 ```
 
-## Using Deeplabv3+ for Portrait mode (Background Blurring):
-
-The background blur effect which is also known as “bokeh” is a well-known effect that is used by many of us mainly for close up shots. It adds a sense of depth to our image as we only concentrate on a particular part of our image. For the task of background we will be using DeeplabV3+ to mask people in the image and apply blur to background. 
-
+## Using Deeplabv3+ for Person Segmentation:
 For the dateset,  we will be using person segmentation dataset. It consist of images and masks of 640X640 dimension with some augmentation like channel shuffle, rotation and Horizontal-flip etc. 
 
-The dateset can be downloaded from 
+The dateset can be downloaded from : 
 
 [Person segmentation](https://www.kaggle.com/datasets/rajanghimire/person-segmentation?datasetId=2656948&sortBy=dateRun&tab=profile)
 
@@ -404,7 +401,7 @@ show_transformed(val_loader)
 
 ![Output](https://i.imgur.com/zriIgsE.png)
 
-## Loss, Optimizer and Metrics:
+## Loss and Metrics:
 
 **Dice loss:**
 
@@ -592,6 +589,8 @@ Entire training process can be found here:
 [Segmentation_Deeplabv3+](https://www.kaggle.com/code/rajanghimire/segmentation-deeplabv3/notebook)
 
 ## Testing our model:
+
+Lets build a pipeline that blurs and removes the background from images using generated masks. 
 
 ```python
 from models.deeplabv3plus import Deeplabv3Plus
