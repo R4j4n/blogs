@@ -25,7 +25,7 @@ This blog will untangle the confusing strings that makeup LLaMa. We will travel
 
 I am utilizing the [lit-lama](https://github.com/Lightning-AI/lit-llama) implementation of LLaMa primarily due to its open-source nature, which aligns with the ethos of transparent and accessible development. While it seamlessly integrates with the original LLaMa weights distributed by Meta for research purposes, what sets lit-lama apart is its independent implementation that covers the entire spectrum from pretraining and finetuning to inference. Notably, this entire repo is provided under the Apache 2.0 license, ensuring broad usability and adaptability for a variety of research and development scenarios.
 
-Before we embark on this journey, it's crucial to have a solid understanding of the Transformer architecture, as this voyage assumes you're well-acquainted with its nuances. You can refer to these blogs to recall the concepts of Transformer. [1.](http://jalammar.github.io/illustrated-transformer/) [2.](https://towardsdatascience.com/transformers-141e32e69591) [3.](https://leimao.github.io/blog/Transformer-Explained/) 
+**Before we embark on this journey, it's crucial to have a solid understanding of the Transformer architecture, as i assume you're well-acquainted with its nuances. You can refer to these blogs to recall the concepts of Transformer.**[1.](http://jalammar.github.io/illustrated-transformer/) [2.](https://towardsdatascience.com/transformers-141e32e69591) [3.](https://leimao.github.io/blog/Transformer-Explained/) 
 
 ## **Foundations of LLaMa: A Deeper Dive**
 
