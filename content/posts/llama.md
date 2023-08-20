@@ -1,12 +1,12 @@
 +++
 author = "Rajan Ghimire"
-title = "Understanding The Secret Sauce of LLaMA🦙"
-date = "2023-01-20"
-description = "Understanding the ins and outs of Meta's LLaMa(Open and Efficient Foundation Language Models)"
+title = "The Secret Sauce of LLaMA🦙 : A Deep Dive!"
+date = "2023-08-20"
+description = "Understanding the ins and outs of Meta's LLaMa(Open and Efficient Foundation Language Models) from scratch."
 tags = [
     "Natural Language Processing",
     "PyTorch",
-    "Large Language Model"
+    "Large Language Models"
 
 ]
 +++
@@ -517,7 +517,7 @@ class SwiGLU(nn.Module):
 
 ## **The LLaMA in PyTorch**
 
-The code used below can be found : [HERE](https://github.com/R4j4n/lit-llama)
+The LLaMa architecture is preetry similar to standard transformer architecture with few new adaptations discussed above. The code used below can be found : [HERE](https://github.com/R4j4n/lit-llama)
 
 | ![s1ndoDYFA2jtjrbOH75n--1--9hegs.jpg](/blogs/img/llama/s1ndoDYFA2jtjrbOH75n--1--9hegs.jpg)| 
 |:--:| 
