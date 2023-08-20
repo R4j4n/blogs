@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Large Language Model on Rajan Ghimire</title>
+    <link>https://R4j4n.github.io/blogs/tags/large-language-model/</link>
+    <description>Recent content in Large Language Model on Rajan Ghimire</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 20 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/large-language-model/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Understanding The Secret Sauce of LLaMA🦙</title>
+      <link>https://R4j4n.github.io/blogs/posts/llama/</link>
+      <pubDate>Sun, 20 Aug 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/llama/</guid>
+      <description>Understanding the ins and outs of Meta&amp;#39;s LLaMa(Open and Efficient Foundation Language Models)</description>
+    </item>
+    
+  </channel>
+</rss>
