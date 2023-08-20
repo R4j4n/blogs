@@ -6,16 +6,7 @@
     <description>Recent content in Natural Language Processing on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/natural-language-processing/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Understanding The Secret Sauce of LLaMA🦙</title>
-      <link>https://R4j4n.github.io/blogs/posts/llama/</link>
-      <pubDate>Sun, 20 Aug 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://R4j4n.github.io/blogs/posts/llama/</guid>
-      <description>Understanding the ins and outs of Meta&amp;#39;s LLaMa(Open and Efficient Foundation Language Models)</description>
-    </item>
-    
+    <lastBuildDate>Mon, 06 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/natural-language-processing/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>LORA(Low Rank Adaptation) : A Deeper Dive</title>
       <link>https://R4j4n.github.io/blogs/posts/lora/</link>
@@ -23,6 +14,15 @@
       
       <guid>https://R4j4n.github.io/blogs/posts/lora/</guid>
       <description>Exploring and Implementating LoRA in PyTorch.</description>
+    </item>
+    
+    <item>
+      <title>Understanding The Secret Sauce of LLaMA🦙</title>
+      <link>https://R4j4n.github.io/blogs/posts/llama/</link>
+      <pubDate>Fri, 20 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/llama/</guid>
+      <description>Understanding the ins and outs of Meta&amp;#39;s LLaMa(Open and Efficient Foundation Language Models)</description>
     </item>
     
   </channel>
