@@ -1,7 +1,7 @@
 +++
 author = "Rajan Ghimire"
 title = "Understanding The Secret Sauce of LLaMA🦙"
-date = "2023-08-20"
+date = "2023-01-20"
 description = "Understanding the ins and outs of Meta's LLaMa(Open and Efficient Foundation Language Models)"
 tags = [
     "Natural Language Processing",
