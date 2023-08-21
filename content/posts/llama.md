@@ -90,7 +90,7 @@ $$
 R_{\Theta, m}^d=\left(\begin{array}{cc}\cos \left(m \theta_i\right) & -\sin \left(m \theta_i\right) \\\sin \left(m \theta_i\right) & \cos \left(m \theta_i\right)\end{array}\right)
 $$
 
-Where $\theta$ is a nonzero constant.
+Where $\theta$ is a nonzero constant. [source](https://youtu.be/GQPOtyITy54)
 
 The rotation matrix is a function of absolute position. Calculating the inner products of rotated queries and keys results in an attention matrix that is a function of relative position information only.
 
