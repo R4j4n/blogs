@@ -157,9 +157,9 @@ Implementing the LLaMA-Adapter requires a solid understanding of the underlying 
 **You can find my in-depth blog on LLaMa.** [HERE](https://r4j4n.github.io/blogs/posts/llama/).
 
 All the codes used below are from the awesome [lit-llama](https://github.com/Lightning-AI/lit-llama) repo. Let's dive into it:
- The **CausalSelfAttention**`** class: 
+ The **CausalSelfAttention** class: 
 
-The main differences lie in how the modified class potentially handles an "adaption prompt" through certain layers of the attention mechanism, which isn't present in the original class. This is because as mentioned erlier, *LLaMA-Adapter inserts the prompts into the topmost $L$ layers of the transformer  $(L ≤ N)$.* **Here, we are using adapter_start_layer: int = 2.** 
+The main differences lie in how the modified class potentially handles an "adaption prompt" through certain layers of the attention mechanism, which isn't present in the original class. This is because as mentioned earlier, _LLaMA-Adapter_ inserts the prompts into the topmost $L$ layers of the transformer  $(L ≤ N)$.* **Here, we are using adapter_start_layer: int = 2.** 
 
 ```python
 @dataclass
@@ -265,7 +265,7 @@ if self.block_idx >= self.adapter_start_layer:
     y = y + self.gating_factor * ay
 ```
 
-If you already got the grasp of the **LLaMA-Adapter** pseudocode provided above, it is pretty straight forward. 
+If you already have a grasp of the **LLaMA-Adapter** pseudocode provided above, it is pretty straightforward. 
 
 The **`Block`** class: 
 
@@ -288,7 +288,7 @@ class Block(nn.Module):
 
 ```
 
-Compared to the original class,  the new **`Block`**  passes *block_idx* block_idx parameter to indicate the transformer layer. 
+Compared to the original class,  the new **`Block`** passes *block_idx* parameter to indicate the transformer layer. 
 
 And, in the **`LLaMA`** class, we pass `Block(config, i)` to indicate ith transformer layer. 
 
@@ -304,7 +304,7 @@ self.transformer = nn.ModuleDict(
         )
 ```
 
-This ****`mark_only_adapter_as_trainable`** method makes only the "adapter" parts of the model trainable, keeping the rest of the model non-trainable. And the ****`adapter_state_from_state_dict`**** extracts the "adapter" weights from the given model state dictionary, so that you can save only those specific weights if needed.
+This ****`mark_only_adapter_as_trainable`** method makes only the "adapter" parts of the model trainable, keeping the rest of the model non-trainable. And the ****`adapter_state_from_state_dict`**** extracts the "adapter" weights from the given model state dictionary so that you can save only those specific weights if needed.
 
 ```python
 def mark_only_adapter_as_trainable(model: LLaMA) -> None:
@@ -319,7 +319,7 @@ def adapter_state_from_state_dict(state_dict: dict) -> dict:
 
 ### Prepare Dateset:
 
-For the training dateset, we will be using alpaca dateset. The alpaca is a instruction fine-tune datasets. Here are some examples from the datasets.
+For the training dataset, we will be using the alpaca dataset. The alpaca is an instruction fine-tune dataset. Here are some examples from the datasets.
 
  
 
@@ -349,9 +349,9 @@ python scripts/prepare_alpaca.py
 
 ```
 
-This will download the data, convert to instruction fine-tune format and tokenize  the data. Before finetuing, the data will be converted to following format: 
+This will download the data, convert to instruction fine-tune format, and tokenize the data. Before finetuning, the data will be converted to the following format: 
 
-**If prompt contains input:**
+**If the prompt contains input:**
 
 ```
 Below is an instruction that describes a task, paired with an input that provides further context.
@@ -381,7 +381,7 @@ Julius Caesar was assassinated by a group of up to 60 conspirators, led by Gaius
 
 ```
 
-### Running the fine-tuning : [source](https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning)
+### Running the fine-tuning: [source](https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning)
 
 ```bash
 python finetune_adapter.py
@@ -415,7 +415,7 @@ python generate_adapter.py \\
 ### Finetune on custom data. [source](https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning)
 With only a few modifications, you can prepare and train on your own instruction dataset.
 Create a JSON file in which each row holds one instruction-response pair.
-A row has an entry for 'instruction', 'input', and 'output', where 'input' is optional an can be
+A row has an entry for 'instruction', 'input', and 'output', where 'input' is optional and can be
 the empty string if the instruction doesn't require a context. Below is an example json file:
     
     ```
@@ -437,7 +437,7 @@ the empty string if the instruction doesn't require a context. Below is an examp
     
     ```
     
-3. Modify `scripts/prepare_mydata.py` to read the json data file.
+3. Modify `scripts/prepare_mydata.py` to read the JSON data file.
 4. Run the script to generate the preprocessed, tokenized train-val split:
     
     ```bash
