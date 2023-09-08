@@ -1,7 +1,7 @@
 +++
 author = "Rajan Ghimire"
 title = "Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀"
-date = "2023-07-27"
+date = "2023-09-09"
 description = "Efficiency and versatility of the LLaMA-Adapter from scratch."
 tags = [
     "Natural Language Processing",
