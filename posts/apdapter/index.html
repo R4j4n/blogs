@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀 | Rajan Ghimire</title>
+<meta name="keywords" content="Natural Language Processing, PyTorch, Large Language Models">
+<meta name="description" content="Efficiency and versatility of the LLaMA-Adapter from scratch.">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/apdapter/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀" />
+<meta property="og:description" content="Efficiency and versatility of the LLaMA-Adapter from scratch." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/apdapter/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-07-27T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-07-27T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀"/>
+<meta name="twitter:description" content="Efficiency and versatility of the LLaMA-Adapter from scratch."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀",
+      "item": "https://R4j4n.github.io/blogs/posts/apdapter/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀",
+  "name": "Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀",
+  "description": "Efficiency and versatility of the LLaMA-Adapter from scratch.",
+  "keywords": [
+    "Natural Language Processing", "PyTorch", "Large Language Models"
+  ],
+  "articleBody": " In this blog, we’ll core concepts behind the LLaMA-Adapter: Efficient Fine-tuning of Language Models with Zero-init Attention, diving into its use of zero-init attention and how it blends new instructional cues without compromising pre-existing knowledge. We will also cover the practical implementation of the LLaMa-Aadapter.\nTo facilitate understanding, let’s cover the concepts like Prompt Tuning, Prefix Tuning, and Adapter that collectively form the core of LLaMA-Adapter, empowe­ring it with unique capabilities and efficiencies.\nAs we move forward, any italic text you come across indicates direct quotations from the original paper or other resources\nPrompt Tuning And Prefix Tuning Prompt Tuning\nTo fine-tune a pre-trained language model, you can add a customized prompt or instruction (Hard Prompting) to the input data before feeding it into the model. This prompt can be a single word, a phrase, or a sentence that directs the model to produce a particular kind of output. By doing so, you’re essentially giving the model a clear direction or guidance on what kind of response it should generate. Similarly, we can provide the model with a few examples of the desired output along with a clear indication of the task at hand. This approach allows the model to learn from the provided examples and adapt its responses accordingly. Think of it as giving the model a road map or a set of guidelines to follow, which helps it better understand what you want it to do. For example,\nBelow is an instruction that describes a task. Write a response that appropriately completes the request. ### Instruction: Create an array of length 5 which contains all even numbers between 1 and 10. ### Response: arr = [2, 4, 6, 8, 10] Prefix Tuning\nIn prefix-tuning, the model is given a few examples of text inputs accompanied by a prefix that defines the task at hand. These soft prompts serve as a means of guiding the model without explicitly stating the instructions. However, unlike hard prompts, soft prompts are not easily interpretable since they rely on complex embeddings derived from the larger model. Their advantage lies in their ability to function as a substitute for additional training data, allowing the model to discover relevant prompts for a specific task. Yet, their opacity raises questions about their transparency and interpretability.\nAccording to the original prefix tuning paper, prefix tuning achieves comparable modeling performance to finetuning all layers while only requiring the training of 0.1% of the parameters — the experiments were based on GPT-2 models. Moreover, in many cases, prefix tuning even outperformed the finetuning of all layers, which is likely because fewer parameters are involved, which helps reduce overfitting on smaller target datasets. source\nTransformer with prefix tuning Adapter: Both Prefix-tuning and Adapter introduce additional parameters to each transformer block. However, instead of the prefixing technique employed in prefix tuning, the adapter method diverges by incorporating adapter layers at two designated positions, as illustrated in the figure below.\nThe architecture of the adapter module and its integration with the Transformer. Left: We add the adapter module twice to each Transformer layer: after the projection following multiheaded attention and after the two feed-forward layers. Right: The adapter consists of a bottleneck that contains few parameters relative to the attention and feedforward layers in the original model. The adapter also contains a skip-connection. During adapter tuning, the green layers are trained on the downstream data, this includes the adapter, the layer normalization parameters, and the final classification layer (not shown in the figure). source\nAccording to the paper:\nAdapters demonstrate their effectiveness by transferring a pre-trained BERT Transformer model to various text classification tasks, achieving near state-of-the-art performance. Importantly, they do this while adding only a minimal number of task-specific parameters per task, typically a fraction of what fine-tuning would require. For example, on the GLUE benchmark, adapters achieve nearly the same performance as full fine-tuning, by training of 3.6% of the parameters per task, compared to fine-tuning which trains 100% of the parameters for each task.\nLLaMA-Adapter The LLaMa adapter extends the ideas of prefix tuning and the original adapter method and introduce a set of adaptable prompts. These prompts are like clues that help the model better understand the instructions it’s given. They’re added to the word tokens at higher transformer layers. This approach allows the model to grasp the context of the instructions more effectively.\nLLaMA-Adapter also introduces a zero-initialized attention mechanism with zero gating. This mechanism injects the new instructional cues into LLaMA, all while preserving its pre-trained knowledge. In other words, it adapts without forgetting what it already knows, making it a versatile and powerful language model.\nHow does it work?\nSome Notations:\n$N :$ layers of the transformer.\n$L :$ Topmost layers of the transformer.\n$M :$ length of word token\n$P_l \\in \\mathbb{R}^{K \\times C}$ : Set of learnable adaption prompts for instruction-following fine-tuning. $K$ denoting the prompt length for each layer, and $C$ equals the feature dimension of LLaMA’s transformer.\n$S_{l}^{K} \\in \\mathbb{R}^{K \\times 1}$ and $S_{l}^{M+1} \\in \\mathbb{R}^{(M+1) \\times 1}$ denote the attention scores of $K$ adaption prompts and $M + 1$ word tokens.\nLLaMA-Adapter inserts the prompts into the topmost $L$ layers of the transformer $(L ≤ N)$.\nZero-initialized Attention and Gating factor :\n$S_{l}^{K} \\in \\mathbb{R}^{K \\times 1}$ represents how much information the learnable prompt contributes which probably causes disturbance in the early training stage. To this end, we adopt a learnable gating factor, denoted as $gl$ , to adaptively control the importance of $S_l^k$ in the attention.\nIf the adaption prompts are randomly initialized, they might bring disturbance to the word tokens at the beginning of training, which harms the fine-tuning stability and effectiveness. Considering this, we modify the vanilla attention mechanisms at the last L transformer layers to zero-initialized attention.\nInitialized by zero, $gl$ can firstly eliminate the influence of under-fitted prompts, and then increase its magnitude for providing more instruction semantics to LLaMA.\nTherefore, we independently apply the soft-max functions to the two components and multiply the-first term by $gl$, formulated as: source\n$$ S_{l}^{g}=\\left[\\operatorname{softmax}\\left(S_{l}^{K}\\right) \\cdot g_{l} ; \\quad \\operatorname{softmax}\\left(S_{l}^{M+1}\\right)\\right]^{T} $$\nTransformer with LLaMA Adapter LLaMA-Adapter Pseudo Code: This following pseudo-code resembles LLaMa-Adapter applied to a vanilla transformer. source\nimport torch import torch.nn as nn from torch.nn import functional as F class LLaMAAdapter(nn.Module): def __init__(self, prompt_length, feature_dimension, num_layers, num_head): super().__init__() # Learnable Adaption Prompts self.prompt = nn.Embedding(prompt_length, feature_dimension) # Zero Init Attention with Gating self.gating_factors = nn.Parameter(torch.zeros(1, feature_dimension)) # k, q, v, projections self.c_attn = nn.Linear(feature_dimension, 3 * feature_dimension, bias=False) # Output projection self.c_proj = nn.Linear(feature_dimension, 3 * feature_dimension , bias=False) def forward(self, input_tokens, attention_mask): q, k, v = self.c_attn(input_tokens).split(self.feature_dimensions, dim=2) # Atention score for M + 1 (Word Tokens) y = F.scaled_dot_product_attention(q, k, v, attn_mask=attention_mask, dropout_p=0.1) _, prefix_key, prefix_value = self.c_attn(self.prompt).split(self.feature_dimensions, dim=2) # Atention score for K (Adaption Prompt) prefix_y = F.scaled_dot_product_attention(q, prefix_key, prefix_value, attn_mask=attention_mask, dropout_p=0.1) # Add a learnable gating factor, to adaptively control the importance prefix_y in the attention. y = y + self.gating_factors * prefix_y y = self.c_proj(y) return y Implementing LLaMA-Adapter: Implementing the LLaMA-Adapter requires a solid understanding of the underlying LLaMa architecture. The LLaMA-Adapter builds upon this architecture. With a thorough comprehension of LLaMa and its intricacies, implementing the LLaMA-Adapter becomes a straightforward process. You can find my in-depth blog on LLaMa. HERE.\nAll the codes used below are from the awesome lit-llama repo. Let’s dive into it: The CausalSelfAttention`** class:\nThe main differences lie in how the modified class potentially handles an “adaption prompt” through certain layers of the attention mechanism, which isn’t present in the original class. This is because as mentioned erlier, LLaMA-Adapter inserts the prompts into the topmost $L$ layers of the transformer $(L ≤ N)$. Here, we are using adapter_start_layer: int = 2.\n@dataclass class LLaMAConfig(llama.LLaMAConfig): adapter_prompt_length: int = 10 adapter_start_layer: int = 2 class CausalSelfAttention(nn.Module): \"\"\"A modification of `lit_llama.model.CausalSelfAttention` that adds the attention over the adaption prompt.\"\"\" def __init__(self, config: LLaMAConfig, block_idx: int) -\u003e None: super().__init__() assert config.n_embd % config.n_head == 0 # key, query, value projections for all heads, but in a batch self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=False) # output projection self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=False) if block_idx \u003e= config.adapter_start_layer: # adapter embedding layer self.adapter_wte = nn.Embedding(config.adapter_prompt_length, config.n_embd) # gate for adaption self.gating_factor = torch.nn.Parameter(torch.zeros(1)) self.n_head = config.n_head self.n_embd = config.n_embd self.block_size = config.block_size self.block_idx = block_idx self.adapter_prompt_length = config.adapter_prompt_length self.adapter_start_layer = config.adapter_start_layer self.rope_cache = None def forward(self, x: torch.Tensor) -\u003e torch.Tensor: B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd) # calculate query, key, values for all heads in batch and move head forward to be the batch dim q, k, v = self.c_attn(x).split(self.n_embd, dim=2) head_size = C // self.n_head k = k.view(B, T, self.n_head, head_size).transpose(1, 2) # (B, nh, T, hs) q = q.view(B, T, self.n_head, head_size).transpose(1, 2) # (B, nh, T, hs) v = v.view(B, T, self.n_head, head_size).transpose(1, 2) # (B, nh, T, hs) if self.rope_cache is None: # cache for future forward calls self.rope_cache = build_rope_cache( seq_len=self.block_size, n_elem=self.n_embd // self.n_head, dtype=x.dtype, device=x.device, ) q = apply_rope(q, self.rope_cache) k = apply_rope(k, self.rope_cache) # efficient attention using Flash Attention CUDA kernels y = F.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=0.0, is_causal=True) if self.block_idx \u003e= self.adapter_start_layer: prefix = self.adapter_wte.weight.reshape(1, self.adapter_prompt_length, self.n_embd) aT = prefix.size(1) _, ak, av = self.c_attn(prefix).split(self.n_embd, dim=2) ak = ak.view(1, aT, self.n_head, head_size).repeat(B, 1, 1, 1).transpose(1, 2) av = av.view(1, aT, self.n_head, head_size).repeat(B, 1, 1, 1).transpose(1, 2) amask = torch.ones(q.shape[-2], ak.shape[-2], dtype=torch.bool, device=x.device) ay = F.scaled_dot_product_attention(q, ak, av, attn_mask=amask, dropout_p=0.0, is_causal=False) y = y + self.gating_factor * ay y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side # output projection y = self.c_proj(y) return y In the modified class, there’s an additional condition to check if the current block index (self.block_idx) is greater than or equal to the adapter_start_layer. If true, attention computations specific to the adapter are performed.\n# in __init__ if block_idx \u003e= config.adapter_start_layer: # adapter embedding layer self.adapter_wte = nn.Embedding(config.adapter_prompt_length, config.n_embd) # gate for adaption self.gating_factor = torch.nn.Parameter(torch.zeros(1)) # Forward pass if self.block_idx \u003e= self.adapter_start_layer: prefix = self.adapter_wte.weight.reshape(1, self.adapter_prompt_length, self.n_embd) aT = prefix.size(1) _, ak, av = self.c_attn(prefix).split(self.n_embd, dim=2) ak = ak.view(1, aT, self.n_head, head_size).repeat(B, 1, 1, 1).transpose(1, 2) av = av.view(1, aT, self.n_head, head_size).repeat(B, 1, 1, 1).transpose(1, 2) amask = torch.ones(q.shape[-2], ak.shape[-2], dtype=torch.bool, device=x.device) ay = F.scaled_dot_product_attention(q, ak, av, attn_mask=amask, dropout_p=0.0, is_causal=False) y = y + self.gating_factor * ay If you already got the grasp of the LLaMA-Adapter pseudocode provided above, it is pretty straight forward.\nThe Block class:\nclass Block(nn.Module): \"\"\"The implementation is identical to `lit_llama.model.Block` with the exception that we replace the attention layer where adaption is implemented.\"\"\" def __init__(self, config: LLaMAConfig, block_idx: int) -\u003e None: super().__init__() self.rms_1 = RMSNorm(config.n_embd) self.attn = CausalSelfAttention(config, block_idx) self.rms_2 = RMSNorm(config.n_embd) self.mlp = MLP(config) def forward(self, x: torch.Tensor) -\u003e torch.Tensor: x = x + self.attn(self.rms_1(x)) x = x + self.mlp(self.rms_2(x)) return x Compared to the original class, the new Block passes block_idx block_idx parameter to indicate the transformer layer.\nAnd, in the LLaMA class, we pass Block(config, i) to indicate ith transformer layer.\nself.transformer = nn.ModuleDict( dict( wte=nn.Embedding(config.vocab_size, config.n_embd), h=nn.ModuleList([Block(config, i) for i in range(config.n_layer)]), ln_f=RMSNorm(config.n_embd), ) ) This **mark_only_adapter_as_trainable method makes only the “adapter” parts of the model trainable, keeping the rest of the model non-trainable. And the adapter_state_from_state_dict extracts the “adapter” weights from the given model state dictionary, so that you can save only those specific weights if needed.\ndef mark_only_adapter_as_trainable(model: LLaMA) -\u003e None: \"\"\"Sets `requires_grad=False` for all non-adapter weights.\"\"\" for name, param in model.named_parameters(): param.requires_grad = \"adapter_wte\" in name or \"gating_factor\" in name def adapter_state_from_state_dict(state_dict: dict) -\u003e dict: \"\"\"Returns the model state dict with only the adapter weights for saving.\"\"\" return {name: param for name, param in state_dict.items() if \"adapter_wte\" in name or \"gating_factor\" in name} Prepare Dateset: For the training dateset, we will be using alpaca dateset. The alpaca is a instruction fine-tune datasets. Here are some examples from the datasets.\n{ \"instruction\": \"Pretend you are a project manager of a construction company. Describe a time when you had to make a difficult decision.\", \"input\": \"\", \"output\": \"I had to make a difficult decision when I was working as a project manager at a construction company. I was in charge of a project that needed to be completed by a certain date in order to meet the client\\u2019s expectations. However, due to unexpected delays, we were not able to meet the deadline and so I had to make a difficult decision. I decided to extend the deadline, but I had to stretch the team\\u2019s resources even further and increase the budget. Although it was a risky decision, I ultimately decided to go ahead with it to ensure that the project was completed on time and that the client\\u2019s expectations were met. The project was eventually successfully completed and this was seen as a testament to my leadership and decision-making abilities.\" }, { \"instruction\": \"Identify the odd one out.\", \"input\": \"Twitter, Instagram, Telegram\", \"output\": \"Telegram\" }, { \"instruction\": \"Explain why the following fraction is equivalent to 1/4\", \"input\": \"4/16\", \"output\": \"The fraction 4/16 is equivalent to 1/4 because both numerators and denominators are divisible by 4. Dividing both the top and bottom numbers by 4 yields the fraction 1/4.\" }, { To download the data and generate the Alpaca instruction tuning dataset use the following command:\npython scripts/prepare_alpaca.py This will download the data, convert to instruction fine-tune format and tokenize the data. Before finetuing, the data will be converted to following format:\nIf prompt contains input:\nBelow is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request. ### Instruction: Evaluate this sentence for spelling and grammar mistakes ### Input: He finnished his meal and left the resturant ### Response: He finished his meal and left the restaurant. else\n\"Below is an instruction that describes a task. \" \"Write a response that appropriately completes the request. ### Instruction: How did Julius Caesar die? ### Response: Julius Caesar was assassinated by a group of up to 60 conspirators, led by Gaius Cassius Longinus and Marcus Junius Brutus, in the Senate House on the Ides of March (15 March) of 44 BC. Running the fine-tuning : source python finetune_adapter.py The finetuning requires at least one GPU with ~24 GB memory (GTX 3090). You can speed up training by setting the devices variable in the script to utilize more GPUs if available. Depending on the available GPU memory, you can also tune the micro_batch_size parameter to utilize the GPU efficiently.\nFor example, the following settings will let you finetune the model in under 1 hour using DeepSpeed Zero-2:\ndevices = 8 micro_batch_size = 8 This script will save checkpoints periodically to the folder out/.\nTest the model You can test the finetuned model with your own instructions by running:\npython generate_adapter.py \\\\ --prompt \"Recommend a movie to watch on the weekend.\" \\\\ --quantize llm.int8 Finetune on custom data. source With only a few modifications, you can prepare and train on your own instruction dataset. Create a JSON file in which each row holds one instruction-response pair. A row has an entry for ‘instruction’, ‘input’, and ‘output’, where ‘input’ is optional an can be the empty string if the instruction doesn’t require a context. Below is an example json file:\n``` [ { \"instruction\": \"Arrange the given numbers in ascending order.\", \"input\": \"2, 4, 0, 8, 3\", \"output\": \"0, 2, 3, 4, 8\" }, ... ] ``` Make a copy of scripts/prepare_alpaca.py and name it what you want:\ncp scripts/prepare_alpaca.py scripts/prepare_mydata.py Modify scripts/prepare_mydata.py to read the json data file.\nRun the script to generate the preprocessed, tokenized train-val split:\npython scripts/prepare_mydata.py --destination_path data/mydata/ Run finetune_adapter.py by passing in the location of your data (and optionally other parameters):\npython finetune_adapter.py --data_dir data/mydata/ --out_dir out/myexperiment My fork of lit-llama can be found Here. References :\nhttps://arxiv.org/abs/2303.16199 https://lightning.ai/pages/community/article/understanding-llama-adapters/ https://github.com/Lightning-AI/lit-llama https://blog.wordbot.io/ai-artificial-intelligence/prompt-tuning-vs-prefix-tuning-understanding-the-differences-in-nlp-techniques/ https://cobusgreyling.medium.com/prompt-tuning-hard-prompts-soft-prompts-49740de6c64c https://stackoverflow.com/questions/74710732/what-are-the-differences-between-adapter-tuning-and-prefix-tuning https://arxiv.org/pdf/1902.00751.pdf https://github.com/jianghaojun/Awesome-Parameter-Efficient-Transfer-Learning ",
+  "wordCount" : "2642",
+  "inLanguage": "en",
+  "datePublished": "2023-07-27T00:00:00Z",
+  "dateModified": "2023-07-27T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/apdapter/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀
+    </h1>
+    <div class="post-description">
+      Efficiency and versatility of the LLaMA-Adapter from scratch.
+    </div>
+    <div class="post-meta"><span title='2023-07-27 00:00:00 +0000 UTC'>July 27, 2023</span>&nbsp;·&nbsp;13 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#prompt-tuning-and-prefix-tuning" aria-label="Prompt Tuning And Prefix Tuning">Prompt Tuning And Prefix Tuning</a></li>
+                <li>
+                    <a href="#adapter" aria-label="Adapter:">Adapter:</a></li>
+                <li>
+                    <a href="#llama-adapter" aria-label="LLaMA-Adapter">LLaMA-Adapter</a></li>
+                <li>
+                    <a href="#implementing-llama-adapter" aria-label="Implementing LLaMA-Adapter:">Implementing LLaMA-Adapter:</a></li>
+                <li>
+                    <a href="#prepare-dateset" aria-label="Prepare Dateset:">Prepare Dateset:</a></li>
+                <li>
+                    <a href="#running-the-fine-tuning--sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning" aria-label="Running the fine-tuning : source">Running the fine-tuning : <a href="https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning">source</a></a></li>
+                <li>
+                    <a href="#test-the-model" aria-label="Test the model">Test the model</a></li>
+                <li>
+                    <a href="#finetune-on-custom-data-sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning" aria-label="Finetune on custom data. source">Finetune on custom data. <a href="https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning">source</a></a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><img loading="lazy" src="/blogs/img/adapter/gjxwnynOPtfBMJDIysnR--1--mcvcl.jpg" alt=""  />
+</p>
+<p>In this blog, we&rsquo;ll core concepts behind the <a href="https://arxiv.org/abs/2303.16199">LLaMA-Adapter: Efficient Fine-tuning of Language Models with Zero-init Attention</a>, diving into its use of zero-init attention and how it blends new instructional cues without compromising pre-existing knowledge. We will also cover the practical implementation of the LLaMa-Aadapter.</p>
+<p>To facilitate understanding, let&rsquo;s cover the concepts like Prompt Tuning, Prefix Tuning, and Adapter that collectively form the core of LLaMA-Adapter, empowe­ring it with unique capabilities and efficiencies.</p>
+<p>As we move forward, any <em><strong>italic text</strong></em> you come across indicates direct quotations from the original paper or other resources</p>
+<h3 id="prompt-tuning-and-prefix-tuning">Prompt Tuning And Prefix Tuning<a hidden class="anchor" aria-hidden="true" href="#prompt-tuning-and-prefix-tuning">#</a></h3>
+<p><strong>Prompt Tuning</strong></p>
+<p>To fine-tune a pre-trained language model, you can add a customized prompt or instruction (Hard Prompting) to the input data before feeding it into the model. This prompt can be a single word, a phrase, or a sentence that directs the model to produce a particular kind of output. By doing so, you&rsquo;re essentially giving the model a clear direction or guidance on what kind of response it should generate. Similarly, we can provide the model with a few examples of the desired output along with a clear indication of the task at hand. This approach allows the model to learn from the provided examples and adapt its responses accordingly. Think of it as giving the model a road map or a set of guidelines to follow, which helps it better understand what you want it to do. For example,</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>Below <span style="color:#f92672">is</span> an instruction that describes a task<span style="color:#f92672">.</span> Write a response that 
+</span></span><span style="display:flex;"><span>appropriately completes the request<span style="color:#f92672">.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### Instruction:</span>
+</span></span><span style="display:flex;"><span>Create an array of length <span style="color:#ae81ff">5</span> which contains all even numbers between <span style="color:#ae81ff">1</span> 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">and</span> <span style="color:#ae81ff">10.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### Response:</span>
+</span></span><span style="display:flex;"><span>arr <span style="color:#f92672">=</span> [<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">10</span>]
+</span></span></code></pre></div><p><strong>Prefix Tuning</strong></p>
+<p>In prefix-tuning, the model is given a few examples of text inputs accompanied by a prefix that defines the task at hand. These soft prompts serve as a means of guiding the model without explicitly stating the instructions. However, unlike hard prompts, soft prompts are not easily interpretable since they rely on complex embeddings derived from the larger model. Their advantage lies in their ability to function as a substitute for additional training data, allowing the model to discover relevant prompts for a specific task. Yet, their opacity raises questions about their transparency and interpretability.</p>
+<p><em>According to the original <a href="https://arxiv.org/abs/2101.00190">prefix tuning</a> paper, prefix tuning achieves comparable modeling performance to finetuning all layers while only requiring the training of 0.1% of the parameters — the experiments were based on GPT-2 models. Moreover, in many cases, prefix tuning even outperformed the finetuning of all layers, which is likely because fewer parameters are involved, which helps reduce overfitting on smaller target datasets.</em> <a href="https://lightning.ai/pages/community/article/understanding-llama-adapters/">source</a></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img loading="lazy" src="/blogs/img/adapter/Multi_head_self_attention_%282%29.png" alt="Multi head self attention (2).png"  />
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>Transformer with prefix tuning</em></td>
+</tr>
+</tbody>
+</table>
+<h3 id="adapter">Adapter:<a hidden class="anchor" aria-hidden="true" href="#adapter">#</a></h3>
+<p><em>Both Prefix-tuning and Adapter introduce additional parameters to each transformer block. However, instead of the prefixing technique employed in prefix tuning, the adapter method diverges by incorporating adapter layers at two designated positions, as illustrated in the figure below.</em></p>
+<p><img loading="lazy" src="/blogs/img/adapter/Adapter.png" alt="Adapter.png"  />
+</p>
+<p><em>The architecture of the adapter module and its integration with the Transformer. Left: We add the adapter module twice to each Transformer layer: after the projection following multiheaded attention and after the two feed-forward layers. Right: The adapter consists of a bottleneck that contains few parameters relative to the attention and feedforward layers in the original model.
+The adapter also contains a skip-connection. During adapter tuning, the green layers are trained on the downstream data, this includes the adapter, the layer normalization parameters, and the final classification layer (not shown in the figure). <a href="https://arxiv.org/pdf/1902.00751.pdf">source</a></em></p>
+<p>According to the paper:</p>
+<p>Adapters demonstrate their effectiveness by transferring a pre-trained BERT Transformer model to various text classification tasks, achieving near state-of-the-art performance. Importantly, they do this while adding only a minimal number of task-specific parameters per task, typically a fraction of what fine-tuning would require. For example, on the GLUE benchmark, adapters achieve nearly the same performance as full fine-tuning, by training of 3.6% of the parameters per task, compared to fine-tuning which trains 100% of the parameters for each task.</p>
+<h3 id="llama-adapter">LLaMA-Adapter<a hidden class="anchor" aria-hidden="true" href="#llama-adapter">#</a></h3>
+<p>The LLaMa adapter extends the ideas of prefix tuning and the original adapter method and introduce a set of adaptable prompts. These prompts are like clues that help the model better understand the instructions it&rsquo;s given. They&rsquo;re added to the word tokens at higher transformer layers. This approach allows the model to grasp the context of the instructions more effectively.</p>
+<p>LLaMA-Adapter also introduces a zero-initialized attention mechanism with zero gating. This mechanism injects the new instructional cues into LLaMA, all while preserving its pre-trained knowledge. In other words, it adapts without forgetting what it already knows, making it a versatile and powerful language model.</p>
+<p><strong>How does it work?</strong></p>
+<p>Some Notations:</p>
+<p>$N :$ layers of the transformer.</p>
+<p>$L :$ Topmost layers of the transformer.</p>
+<p>$M :$ length of  word token</p>
+<p>$P_l \in \mathbb{R}^{K \times C}$  : Set of learnable adaption prompts for instruction-following fine-tuning. $K$ denoting the prompt length for each layer, and $C$ equals the feature dimension of LLaMA’s transformer.</p>
+<p>$S_{l}^{K} \in \mathbb{R}^{K \times 1}$ and $S_{l}^{M+1} \in \mathbb{R}^{(M+1) \times 1}$ <em>denote the attention scores of $K$ adaption prompts and  $M + 1$ word tokens.</em></p>
+<p><em>LLaMA-Adapter inserts the prompts into the topmost $L$ layers of the transformer  $(L ≤ N)$.</em></p>
+<p><strong>Zero-initialized Attention and Gating factor  :</strong></p>
+<p>$S_{l}^{K} \in \mathbb{R}^{K \times 1}$ <em>represents how much information the learnable prompt contributes which probably causes disturbance in the early training stage. To this end, we adopt a learnable gating factor, denoted as</em> $gl$ <em>, to adaptively control the importance of $S_l^k$ in the attention.</em></p>
+<p><em>If the adaption prompts are randomly initialized, they might bring disturbance to the word tokens
+at the beginning of training, which harms the fine-tuning stability and effectiveness. Considering this, we modify the vanilla attention mechanisms at the last L transformer layers to zero-initialized attention.</em></p>
+<p><em>Initialized by zero, $gl$ can firstly eliminate the influence of under-fitted prompts, and then increase its magnitude for providing more instruction semantics to LLaMA.</em></p>
+<p><em>Therefore, we independently apply the soft-max functions to the two components and multiply the-first term by $gl$, formulated as:</em> <a href="https://arxiv.org/abs/2303.16199">source</a></p>
+<p>$$
+S_{l}^{g}=\left[\operatorname{softmax}\left(S_{l}^{K}\right) \cdot g_{l} ; \quad \operatorname{softmax}\left(S_{l}^{M+1}\right)\right]^{T}
+$$</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img loading="lazy" src="/blogs/img/adapter/Query.png" alt="Query.png"  />
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>Transformer with LLaMA Adapter</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>LLaMA-Adapter Pseudo Code:</strong>
+This following pseudo-code resembles LLaMa-Adapter applied to a vanilla transformer. <a href="https://github.com/Motsepe-Jr/AI-research-papers-pseudo-code/blob/main/Finetune%20Papers/LLaMA_Adapter_Finetuning.ipynb">source</a></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch 
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.nn <span style="color:#f92672">import</span> functional <span style="color:#66d9ef">as</span> F
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LLaMAAdapter</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, prompt_length, feature_dimension, num_layers, num_head):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#  Learnable Adaption Prompts</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>prompt <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(prompt_length, feature_dimension)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Zero Init Attention with Gating</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>gating_factors <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(<span style="color:#ae81ff">1</span>, feature_dimension))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># k, q, v, projections</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>c_attn <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(feature_dimension, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> feature_dimension, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Output projection</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>c_proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(feature_dimension, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> feature_dimension , bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, input_tokens, attention_mask):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        q, k, v <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_attn(input_tokens)<span style="color:#f92672">.</span>split(self<span style="color:#f92672">.</span>feature_dimensions, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Atention score for M + 1 (Word Tokens)</span>
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>scaled_dot_product_attention(q, k, v, attn_mask<span style="color:#f92672">=</span>attention_mask, dropout_p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        _, prefix_key, prefix_value <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_attn(self<span style="color:#f92672">.</span>prompt)<span style="color:#f92672">.</span>split(self<span style="color:#f92672">.</span>feature_dimensions, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Atention score for K (Adaption Prompt)</span>
+</span></span><span style="display:flex;"><span>        prefix_y <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>scaled_dot_product_attention(q, prefix_key, prefix_value, attn_mask<span style="color:#f92672">=</span>attention_mask, dropout_p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.1</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Add a learnable gating factor, to adaptively control the importance prefix_y in the attention.</span>
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> y <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>gating_factors <span style="color:#f92672">*</span> prefix_y
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_proj(y)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y
+</span></span></code></pre></div><h3 id="implementing-llama-adapter">Implementing LLaMA-Adapter:<a hidden class="anchor" aria-hidden="true" href="#implementing-llama-adapter">#</a></h3>
+<p>Implementing the LLaMA-Adapter requires a solid understanding of the underlying LLaMa architecture. The LLaMA-Adapter builds upon this architecture. With a thorough comprehension of LLaMa and its intricacies, implementing the LLaMA-Adapter becomes a straightforward process.
+<strong>You can find my in-depth blog on LLaMa.</strong> <a href="https://r4j4n.github.io/blogs/posts/llama/">HERE</a>.</p>
+<p>All the codes used below are from the awesome <a href="https://github.com/Lightning-AI/lit-llama">lit-llama</a> repo. Let&rsquo;s dive into it:
+The <strong>CausalSelfAttention</strong>`** class:</p>
+<p>The main differences lie in how the modified class potentially handles an &ldquo;adaption prompt&rdquo; through certain layers of the attention mechanism, which isn&rsquo;t present in the original class. This is because as mentioned erlier, <em>LLaMA-Adapter inserts the prompts into the topmost $L$ layers of the transformer  $(L ≤ N)$.</em> <strong>Here, we are using adapter_start_layer: int = 2.</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@dataclass</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LLaMAConfig</span>(llama<span style="color:#f92672">.</span>LLaMAConfig):
+</span></span><span style="display:flex;"><span>    adapter_prompt_length: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>    adapter_start_layer: int <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CausalSelfAttention</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;A modification of `lit_llama.model.CausalSelfAttention` that adds the attention
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    over the adaption prompt.&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config: LLaMAConfig, block_idx: int) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> config<span style="color:#f92672">.</span>n_embd <span style="color:#f92672">%</span> config<span style="color:#f92672">.</span>n_head <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># key, query, value projections for all heads, but in a batch</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>c_attn <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>n_embd, <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> config<span style="color:#f92672">.</span>n_embd, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># output projection</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>c_proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>n_embd, config<span style="color:#f92672">.</span>n_embd, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> block_idx <span style="color:#f92672">&gt;=</span> config<span style="color:#f92672">.</span>adapter_start_layer:
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># adapter embedding layer</span>
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>adapter_wte <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(config<span style="color:#f92672">.</span>adapter_prompt_length, config<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># gate for adaption</span>
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>gating_factor <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(<span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>n_head <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>n_head
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>n_embd <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>n_embd
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>block_size <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>block_size
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>block_idx <span style="color:#f92672">=</span> block_idx
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>adapter_prompt_length <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>adapter_prompt_length
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>adapter_start_layer <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>adapter_start_layer
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>rope_cache <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x: torch<span style="color:#f92672">.</span>Tensor) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>Tensor:
+</span></span><span style="display:flex;"><span>        B, T, C <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size()  <span style="color:#75715e"># batch size, sequence length, embedding dimensionality (n_embd)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># calculate query, key, values for all heads in batch and move head forward to be the batch dim</span>
+</span></span><span style="display:flex;"><span>        q, k, v <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_attn(x)<span style="color:#f92672">.</span>split(self<span style="color:#f92672">.</span>n_embd, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        head_size <span style="color:#f92672">=</span> C <span style="color:#f92672">//</span> self<span style="color:#f92672">.</span>n_head
+</span></span><span style="display:flex;"><span>        k <span style="color:#f92672">=</span> k<span style="color:#f92672">.</span>view(B, T, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)  <span style="color:#75715e"># (B, nh, T, hs)</span>
+</span></span><span style="display:flex;"><span>        q <span style="color:#f92672">=</span> q<span style="color:#f92672">.</span>view(B, T, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)  <span style="color:#75715e"># (B, nh, T, hs)</span>
+</span></span><span style="display:flex;"><span>        v <span style="color:#f92672">=</span> v<span style="color:#f92672">.</span>view(B, T, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)  <span style="color:#75715e"># (B, nh, T, hs)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>rope_cache <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># cache for future forward calls</span>
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>rope_cache <span style="color:#f92672">=</span> build_rope_cache(
+</span></span><span style="display:flex;"><span>                seq_len<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>block_size,
+</span></span><span style="display:flex;"><span>                n_elem<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>n_embd <span style="color:#f92672">//</span> self<span style="color:#f92672">.</span>n_head, 
+</span></span><span style="display:flex;"><span>                dtype<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>dtype,
+</span></span><span style="display:flex;"><span>                device<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>device,
+</span></span><span style="display:flex;"><span>            )
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        q <span style="color:#f92672">=</span> apply_rope(q, self<span style="color:#f92672">.</span>rope_cache)
+</span></span><span style="display:flex;"><span>        k <span style="color:#f92672">=</span> apply_rope(k, self<span style="color:#f92672">.</span>rope_cache)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># efficient attention using Flash Attention CUDA kernels</span>
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>scaled_dot_product_attention(q, k, v, attn_mask<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>, dropout_p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, is_causal<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>block_idx <span style="color:#f92672">&gt;=</span> self<span style="color:#f92672">.</span>adapter_start_layer:
+</span></span><span style="display:flex;"><span>            prefix <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>adapter_wte<span style="color:#f92672">.</span>weight<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>adapter_prompt_length, self<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            aT <span style="color:#f92672">=</span> prefix<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            _, ak, av <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_attn(prefix)<span style="color:#f92672">.</span>split(self<span style="color:#f92672">.</span>n_embd, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>            ak <span style="color:#f92672">=</span> ak<span style="color:#f92672">.</span>view(<span style="color:#ae81ff">1</span>, aT, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>repeat(B, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>            av <span style="color:#f92672">=</span> av<span style="color:#f92672">.</span>view(<span style="color:#ae81ff">1</span>, aT, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>repeat(B, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            amask <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>ones(q<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>], ak<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>], dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>bool, device<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>device)
+</span></span><span style="display:flex;"><span>            ay <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>scaled_dot_product_attention(q, ak, av, attn_mask<span style="color:#f92672">=</span>amask, dropout_p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, is_causal<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>            y <span style="color:#f92672">=</span> y <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>gating_factor <span style="color:#f92672">*</span> ay
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> y<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>contiguous()<span style="color:#f92672">.</span>view(B, T, C)  <span style="color:#75715e"># re-assemble all head outputs side by side</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># output projection</span>
+</span></span><span style="display:flex;"><span>        y <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_proj(y)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y
+</span></span></code></pre></div><p>In the modified class, there&rsquo;s an additional condition to check if the current block index (<strong><code>self.block_idx</code></strong>) is greater than or equal to the <strong><code>adapter_start_layer</code></strong>. If true, attention computations specific to the adapter are performed.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># in __init__</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> block_idx <span style="color:#f92672">&gt;=</span> config<span style="color:#f92672">.</span>adapter_start_layer:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># adapter embedding layer</span>
+</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>adapter_wte <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(config<span style="color:#f92672">.</span>adapter_prompt_length, config<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># gate for adaption</span>
+</span></span><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>gating_factor <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>zeros(<span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Forward pass</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>block_idx <span style="color:#f92672">&gt;=</span> self<span style="color:#f92672">.</span>adapter_start_layer:
+</span></span><span style="display:flex;"><span>    prefix <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>adapter_wte<span style="color:#f92672">.</span>weight<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">1</span>, self<span style="color:#f92672">.</span>adapter_prompt_length, self<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    aT <span style="color:#f92672">=</span> prefix<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    _, ak, av <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>c_attn(prefix)<span style="color:#f92672">.</span>split(self<span style="color:#f92672">.</span>n_embd, dim<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>    ak <span style="color:#f92672">=</span> ak<span style="color:#f92672">.</span>view(<span style="color:#ae81ff">1</span>, aT, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>repeat(B, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>    av <span style="color:#f92672">=</span> av<span style="color:#f92672">.</span>view(<span style="color:#ae81ff">1</span>, aT, self<span style="color:#f92672">.</span>n_head, head_size)<span style="color:#f92672">.</span>repeat(B, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    amask <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>ones(q<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>], ak<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>], dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>bool, device<span style="color:#f92672">=</span>x<span style="color:#f92672">.</span>device)
+</span></span><span style="display:flex;"><span>    ay <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>scaled_dot_product_attention(q, ak, av, attn_mask<span style="color:#f92672">=</span>amask, dropout_p<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, is_causal<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>    y <span style="color:#f92672">=</span> y <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>gating_factor <span style="color:#f92672">*</span> ay
+</span></span></code></pre></div><p>If you already got the grasp of the <strong>LLaMA-Adapter</strong> pseudocode provided above, it is pretty straight forward.</p>
+<p>The <strong><code>Block</code></strong> class:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Block</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;The implementation is identical to `lit_llama.model.Block` with the exception that
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    we replace the attention layer where adaption is implemented.&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config: LLaMAConfig, block_idx: int) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>rms_1 <span style="color:#f92672">=</span> RMSNorm(config<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn <span style="color:#f92672">=</span> CausalSelfAttention(config, block_idx)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>rms_2 <span style="color:#f92672">=</span> RMSNorm(config<span style="color:#f92672">.</span>n_embd)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>mlp <span style="color:#f92672">=</span> MLP(config)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x: torch<span style="color:#f92672">.</span>Tensor) <span style="color:#f92672">-&gt;</span> torch<span style="color:#f92672">.</span>Tensor:
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>attn(self<span style="color:#f92672">.</span>rms_1(x))
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>mlp(self<span style="color:#f92672">.</span>rms_2(x))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><p>Compared to the original class,  the new <strong><code>Block</code></strong>  passes <em>block_idx</em> block_idx parameter to indicate the transformer layer.</p>
+<p>And, in the <strong><code>LLaMA</code></strong> class, we pass <code>Block(config, i)</code> to indicate ith transformer layer.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>self<span style="color:#f92672">.</span>transformer <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>ModuleDict(
+</span></span><span style="display:flex;"><span>            dict(
+</span></span><span style="display:flex;"><span>                wte<span style="color:#f92672">=</span>nn<span style="color:#f92672">.</span>Embedding(config<span style="color:#f92672">.</span>vocab_size, config<span style="color:#f92672">.</span>n_embd),
+</span></span><span style="display:flex;"><span>                h<span style="color:#f92672">=</span>nn<span style="color:#f92672">.</span>ModuleList([Block(config, i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(config<span style="color:#f92672">.</span>n_layer)]),
+</span></span><span style="display:flex;"><span>                ln_f<span style="color:#f92672">=</span>RMSNorm(config<span style="color:#f92672">.</span>n_embd),
+</span></span><span style="display:flex;"><span>            )
+</span></span><span style="display:flex;"><span>        )
+</span></span></code></pre></div><p>This **<strong><code>mark_only_adapter_as_trainable</code></strong> method makes only the &ldquo;adapter&rdquo; parts of the model trainable, keeping the rest of the model non-trainable. And the <strong><strong><code>adapter_state_from_state_dict</code></strong></strong> extracts the &ldquo;adapter&rdquo; weights from the given model state dictionary, so that you can save only those specific weights if needed.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">mark_only_adapter_as_trainable</span>(model: LLaMA) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;Sets `requires_grad=False` for all non-adapter weights.&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> name, param <span style="color:#f92672">in</span> model<span style="color:#f92672">.</span>named_parameters():
+</span></span><span style="display:flex;"><span>        param<span style="color:#f92672">.</span>requires_grad <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;adapter_wte&#34;</span> <span style="color:#f92672">in</span> name <span style="color:#f92672">or</span> <span style="color:#e6db74">&#34;gating_factor&#34;</span> <span style="color:#f92672">in</span> name
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">adapter_state_from_state_dict</span>(state_dict: dict) <span style="color:#f92672">-&gt;</span> dict:
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;Returns the model state dict with only the adapter weights for saving.&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> {name: param <span style="color:#66d9ef">for</span> name, param <span style="color:#f92672">in</span> state_dict<span style="color:#f92672">.</span>items() <span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#34;adapter_wte&#34;</span> <span style="color:#f92672">in</span> name <span style="color:#f92672">or</span> <span style="color:#e6db74">&#34;gating_factor&#34;</span> <span style="color:#f92672">in</span> name}
+</span></span></code></pre></div><h3 id="prepare-dateset">Prepare Dateset:<a hidden class="anchor" aria-hidden="true" href="#prepare-dateset">#</a></h3>
+<p>For the training dateset, we will be using alpaca dateset. The alpaca is a instruction fine-tune datasets. Here are some examples from the datasets.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;instruction&#34;</span>: <span style="color:#e6db74">&#34;Pretend you are a project manager of a construction company. Describe a time when you had to make a difficult decision.&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;input&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;output&#34;</span>: <span style="color:#e6db74">&#34;I had to make a difficult decision when I was working as a project manager at a construction company. I was in charge of a project that needed to be completed by a certain date in order to meet the client</span><span style="color:#ae81ff">\u2019</span><span style="color:#e6db74">s expectations. However, due to unexpected delays, we were not able to meet the deadline and so I had to make a difficult decision. I decided to extend the deadline, but I had to stretch the team</span><span style="color:#ae81ff">\u2019</span><span style="color:#e6db74">s resources even further and increase the budget. Although it was a risky decision, I ultimately decided to go ahead with it to ensure that the project was completed on time and that the client</span><span style="color:#ae81ff">\u2019</span><span style="color:#e6db74">s expectations were met. The project was eventually successfully completed and this was seen as a testament to my leadership and decision-making abilities.&#34;</span>
+</span></span><span style="display:flex;"><span>},
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;instruction&#34;</span>: <span style="color:#e6db74">&#34;Identify the odd one out.&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;input&#34;</span>: <span style="color:#e6db74">&#34;Twitter, Instagram, Telegram&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;output&#34;</span>: <span style="color:#e6db74">&#34;Telegram&#34;</span>
+</span></span><span style="display:flex;"><span>},
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;instruction&#34;</span>: <span style="color:#e6db74">&#34;Explain why the following fraction is equivalent to 1/4&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;input&#34;</span>: <span style="color:#e6db74">&#34;4/16&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;output&#34;</span>: <span style="color:#e6db74">&#34;The fraction 4/16 is equivalent to 1/4 because both numerators and denominators are divisible by 4. Dividing both the top and bottom numbers by 4 yields the fraction 1/4.&#34;</span>
+</span></span><span style="display:flex;"><span>},
+</span></span><span style="display:flex;"><span>{
+</span></span></code></pre></div><p>To download the data and generate the Alpaca instruction tuning dataset use the following command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python scripts/prepare_alpaca.py
+</span></span></code></pre></div><p>This will download the data, convert to instruction fine-tune format and tokenize  the data. Before finetuing, the data will be converted to following format:</p>
+<p><strong>If prompt contains input:</strong></p>
+<pre tabindex="0"><code>Below is an instruction that describes a task, paired with an input that provides further context.
+Write a response that appropriately completes the request.
+
+### Instruction:
+Evaluate this sentence for spelling and grammar mistakes
+
+### Input:
+He finnished his meal and left the resturant
+
+### Response:
+He finished his meal and left the restaurant.
+</code></pre><p><strong>else</strong></p>
+<pre tabindex="0"><code>&#34;Below is an instruction that describes a task. &#34;
+&#34;Write a response that appropriately completes the request.
+### Instruction:
+How did Julius Caesar die?
+
+### Response:
+Julius Caesar was assassinated by a group of up to 60 conspirators, led by Gaius Cassius Longinus and Marcus Junius Brutus, in the Senate House on the Ides of March (15 March) of 44 BC.
+</code></pre><h3 id="running-the-fine-tuning--sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning">Running the fine-tuning : <a href="https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning">source</a><a hidden class="anchor" aria-hidden="true" href="#running-the-fine-tuning--sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python finetune_adapter.py
+</span></span></code></pre></div><p>The finetuning requires at least one GPU with ~24 GB memory (GTX 3090).
+You can speed up training by setting the <code>devices</code> variable in the script to utilize more GPUs if available.
+Depending on the available GPU memory, you can also tune the <code>micro_batch_size</code> parameter to utilize the GPU efficiently.</p>
+<p>For example, the following settings will let you finetune the model in under 1 hour using DeepSpeed Zero-2:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>devices <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
+</span></span><span style="display:flex;"><span>micro_batch_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>
+</span></span></code></pre></div><p>This script will save checkpoints periodically to the folder <code>out/</code>.</p>
+<h3 id="test-the-model">Test the model<a hidden class="anchor" aria-hidden="true" href="#test-the-model">#</a></h3>
+<p>You can test the finetuned model with your own instructions by running:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python generate_adapter.py <span style="color:#ae81ff">\\</span>
+</span></span><span style="display:flex;"><span>    --prompt <span style="color:#e6db74">&#34;Recommend a movie to watch on the weekend.&#34;</span> <span style="color:#ae81ff">\\</span>
+</span></span><span style="display:flex;"><span>    --quantize llm.int8
+</span></span></code></pre></div><h3 id="finetune-on-custom-data-sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning">Finetune on custom data. <a href="https://github.com/Lightning-AI/lit-llama/blob/main/howto/finetune_adapter.md#running-the-finetuning">source</a><a hidden class="anchor" aria-hidden="true" href="#finetune-on-custom-data-sourcehttpsgithubcomlightning-ailit-llamablobmainhowtofinetune_adaptermdrunning-the-finetuning">#</a></h3>
+<p>With only a few modifications, you can prepare and train on your own instruction dataset.
+Create a JSON file in which each row holds one instruction-response pair.
+A row has an entry for &lsquo;instruction&rsquo;, &lsquo;input&rsquo;, and &lsquo;output&rsquo;, where &lsquo;input&rsquo; is optional an can be
+the empty string if the instruction doesn&rsquo;t require a context. Below is an example json file:</p>
+<pre><code>```
+[
+    {
+        &quot;instruction&quot;: &quot;Arrange the given numbers in ascending order.&quot;,
+        &quot;input&quot;: &quot;2, 4, 0, 8, 3&quot;,
+        &quot;output&quot;: &quot;0, 2, 3, 4, 8&quot;
+    },
+    ...
+]
+
+```
+</code></pre>
+<ol start="2">
+<li>
+<p>Make a copy of <code>scripts/prepare_alpaca.py</code> and name it what you want:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cp scripts/prepare_alpaca.py scripts/prepare_mydata.py
+</span></span></code></pre></div></li>
+<li>
+<p>Modify <code>scripts/prepare_mydata.py</code> to read the json data file.</p>
+</li>
+<li>
+<p>Run the script to generate the preprocessed, tokenized train-val split:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python scripts/prepare_mydata.py --destination_path data/mydata/
+</span></span></code></pre></div></li>
+<li>
+<p>Run <code>finetune_adapter.py</code> by passing in the location of your data (and optionally other parameters):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>python finetune_adapter.py --data_dir data/mydata/ --out_dir out/myexperiment
+</span></span></code></pre></div></li>
+</ol>
+<p>My fork of lit-llama can be found <a href="https://github.com/R4j4n/lit-llama">Here</a>.
+References :</p>
+<ul>
+<li><a href="https://arxiv.org/abs/2303.16199">https://arxiv.org/abs/2303.16199</a></li>
+<li><a href="https://lightning.ai/pages/community/article/understanding-llama-adapters/">https://lightning.ai/pages/community/article/understanding-llama-adapters/</a></li>
+<li><a href="https://github.com/Lightning-AI/lit-llama">https://github.com/Lightning-AI/lit-llama</a></li>
+<li><a href="https://blog.wordbot.io/ai-artificial-intelligence/prompt-tuning-vs-prefix-tuning-understanding-the-differences-in-nlp-techniques/">https://blog.wordbot.io/ai-artificial-intelligence/prompt-tuning-vs-prefix-tuning-understanding-the-differences-in-nlp-techniques/</a></li>
+<li><a href="https://cobusgreyling.medium.com/prompt-tuning-hard-prompts-soft-prompts-49740de6c64c">https://cobusgreyling.medium.com/prompt-tuning-hard-prompts-soft-prompts-49740de6c64c</a></li>
+<li><a href="https://stackoverflow.com/questions/74710732/what-are-the-differences-between-adapter-tuning-and-prefix-tuning">https://stackoverflow.com/questions/74710732/what-are-the-differences-between-adapter-tuning-and-prefix-tuning</a></li>
+<li><a href="https://arxiv.org/pdf/1902.00751.pdf">https://arxiv.org/pdf/1902.00751.pdf</a></li>
+<li><a href="https://github.com/jianghaojun/Awesome-Parameter-Efficient-Transfer-Learning">https://github.com/jianghaojun/Awesome-Parameter-Efficient-Transfer-Learning</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/natural-language-processing/">Natural Language Processing</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/large-language-models/">Large Language Models</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://R4j4n.github.io/blogs/posts/llama/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>The Secret Sauce of LLaMA🦙 : A Deep Dive!</span>
+  </a>
+  <a class="next" href="https://R4j4n.github.io/blogs/posts/deeplab/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Semantic Segmentation from scratch in PyTorch.</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
