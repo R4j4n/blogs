@@ -6,7 +6,16 @@
     <description>Recent content in Large Language Models on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Aug 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/large-language-models/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 08 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/large-language-models/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀</title>
+      <link>https://R4j4n.github.io/blogs/posts/apdapter/</link>
+      <pubDate>Fri, 08 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/apdapter/</guid>
+      <description>Efficiency and versatility of the LLaMA-Adapter from scratch.</description>
+    </item>
+    
     <item>
       <title>The Secret Sauce of LLaMA🦙 : A Deep Dive!</title>
       <link>https://R4j4n.github.io/blogs/posts/llama/</link>
