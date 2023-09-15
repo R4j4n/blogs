@@ -525,6 +525,7 @@ From the simplicity of Greedy Search Decoding to the more sophisticated approach
 ## References
 
 - [https://www.kaggle.com/code/sajjadayobi360/how-to-generate-text-using-language-models](https://www.kaggle.com/code/sajjadayobi360/how-to-generate-text-using-language-models)
+- https://github.com/rohan-paul/MachineLearning-DeepLearning-Code-for-my-YouTube-Channel/blob/master/NLP/Decoding_Strategies_for_text_generation/Decoding_Strategies_for_text_generation.ipynb
 - [https://vitalflux.com/greedy-search-vs-beam-search-decoding-concepts-examples/#:~:text=complex decoding methods.-,Drawbacks of Greedy Search Decoding Method,term implications of its choices](https://vitalflux.com/greedy-search-vs-beam-search-decoding-concepts-examples/#:~:text=complex%20decoding%20methods.-,Drawbacks%20of%20Greedy%20Search%20Decoding%20Method,term%20implications%20of%20its%20choices).
 - [https://medium.com/@jessica_lopez/understanding-greedy-search-and-beam-search-98c1e3cd821d](https://medium.com/@jessica_lopez/understanding-greedy-search-and-beam-search-98c1e3cd821d)
 - [https://towardsdatascience.com/decoding-strategies-that-you-need-to-know-for-response-generation-ba95ee0faadc#:~:text=Random Sampling with Temperature,1%2C there is no effect](https://towardsdatascience.com/decoding-strategies-that-you-need-to-know-for-response-generation-ba95ee0faadc#:~:text=Random%20Sampling%20with%20Temperature,1%2C%20there%20is%20no%20effect).
