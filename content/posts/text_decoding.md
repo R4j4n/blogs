@@ -25,7 +25,7 @@ Language models, especially those like the GPT and LLaMa, are auto-regressive. T
 
 The true beauty of these strategies is best appreciated when they are built from the ground up, understanding each decision and line of code that goes into making them work.
 
-In this blog, we aim to demystify these decoding strategies. And how do we plan to do that? By doing everything from scratch! We won't be relying on pre-built libraries or ready-made functions
+In this blog, we aim to demystify these decoding strategies. And how do we plan to do that? **By doing everything from scratch!** We won't be relying on pre-built libraries or ready-made functions
 
 ## Decoding Strategies
 
@@ -308,13 +308,13 @@ Let’s look at the probability distribution when we change the temperature of t
 
 When Temperature is set to **0.1 :** 
 
-`random_tempreature.*sample_plot*(*prompt*=SAMPLE_TEXT,*temp*=0.1)`
+`random_tempreature.sample_plot(prompt=SAMPLE_TEXT,temp=0.1)`
 
 ![rand0.png](/blogs/img/decoding/rand0.png)
 
 When Temperature is set to **0.9 :** 
 
-`random_tempreature.*sample_plot*(*prompt*=SAMPLE_TEXT,*temp*=0.1)`
+`random_tempreature.sample_plot(prompt=SAMPLE_TEXT,temp=0.1)`
 
 ![rand1.png](/blogs/img/decoding/rand1.png)
 
@@ -399,11 +399,11 @@ Artificial Intelligence is the intelligence possessed by the computers that cont
 
 Let’s look at the probability distribution when we change the temperature of the softmax function among top-k tokens.
 
-`topksampler.*sample_plot*(*prompt*=SAMPLE_TEXT,*top_k*=10,*temp*=0.1)`
+`topksampler.sample_plot(prompt=SAMPLE_TEXT,top_k=10,temp=0.1)`
 
 ![topk1.png](/blogs/img/decoding/topk1.png)
 
-`topksampler.*sample_plot*(*prompt*=SAMPLE_TEXT,*top_k*=10,*temp*=0.9)`
+`topksampler.sample_plot(prompt=SAMPLE_TEXT,top_k=10,temp=0.9)`
 
 ![topk2.png](/blogs/img/decoding/topk2.png)
 
@@ -509,20 +509,20 @@ Artificial Intelligence is the intelligence possessed by the sentient, intellect
 
 Let’s look at the number of candidate words distribution when we change the **p** value.
 
-`nssammpler.*sample_plot*(*prompt*=SAMPLE_TEXT,*p*=0.8)`
+`nssammpler.sample_plot(prompt=SAMPLE_TEXT,p=0.8)`
 
 ![p0.png](/blogs/img/decoding/p0.png)
 
-`nssammpler.*sample_plot*(*prompt*=SAMPLE_TEXT,*p*=0.1)`
+`nssammpler.sample_plot(prompt*=SAMPLE_TEXT,p=0.1)`
 
 ![p1.png](/blogs/img/decoding/p1.png)
 
 We can see from the plots that by increasing the p, the candidate words distribution converts from more uniform distribution to a skewed distribution. 
 
-All of the codes used in this repository can be found [HERE](https://github.com/R4j4n/Text-Decoding-Strategies)
+All of the codes used in this repository can be found [HERE](https://github.com/R4j4n/Text-Decoding-Strategies). 
 From the simplicity of Greedy Search Decoding to the more sophisticated approaches like Beam Search and various sampling techniques such as Temperature Sampling, Top-K, and Nucleus Sampling, each offers unique advantages to address specific challenges. By understanding and implementing these methods, we can tailor their model's output to align closer with the desired outcome.
 
-### References
+## References
 
 - [https://www.kaggle.com/code/sajjadayobi360/how-to-generate-text-using-language-models](https://www.kaggle.com/code/sajjadayobi360/how-to-generate-text-using-language-models)
 - [https://vitalflux.com/greedy-search-vs-beam-search-decoding-concepts-examples/#:~:text=complex decoding methods.-,Drawbacks of Greedy Search Decoding Method,term implications of its choices](https://vitalflux.com/greedy-search-vs-beam-search-decoding-concepts-examples/#:~:text=complex%20decoding%20methods.-,Drawbacks%20of%20Greedy%20Search%20Decoding%20Method,term%20implications%20of%20its%20choices).
