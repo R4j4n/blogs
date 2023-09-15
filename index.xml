@@ -6,7 +6,16 @@
     <description>Recent content on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 08 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 15 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Decoding Strategies in Language Models</title>
+      <link>https://R4j4n.github.io/blogs/posts/text_decoding/</link>
+      <pubDate>Fri, 15 Sep 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/text_decoding/</guid>
+      <description>Exploring and implementing text decoding strategies in PyTorch</description>
+    </item>
+    
     <item>
       <title>Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀</title>
       <link>https://R4j4n.github.io/blogs/posts/apdapter/</link>

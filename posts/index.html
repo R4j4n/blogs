@@ -166,6 +166,20 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2>Decoding Strategies in Language Models
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>The Auto-regression and Decoding Strategies Auto-regressive language generation assumes that the element of the output sequence at time-step $t$ is determined by the input sequence and time-steps before $t$. $$ P\left(w_{1: T} \mid W_0\right)=\prod_{t=1}^T P\left(w_t \mid w_{1: t-1}, W_0\right), \text { with } w_{1: 0}=\emptyset $$
+where $W_0$ is the input sequence; $W_t$ is the word at timestep $t$; T is determined by the position of a token. source
+Language models, especially those like the GPT and LLaMa, are auto-regressive....</p>
+  </div>
+  <footer class="entry-footer"><span title='2023-09-15 00:00:00 +0000 UTC'>September 15, 2023</span>&nbsp;·&nbsp;14 min&nbsp;·&nbsp;Rajan Ghimire</footer>
+  <a class="entry-link" aria-label="post link to Decoding Strategies in Language Models" href="https://R4j4n.github.io/blogs/posts/text_decoding/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2>Supercharge Your LLaMA: Fine-Tuning Made Effortless and Efficient 🚀
     </h2>
   </header>
