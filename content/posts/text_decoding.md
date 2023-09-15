@@ -139,8 +139,7 @@ While the outcome of beam search decoding is notably more fluent, it may contain
 
 Let's take an example where we search through the graph to obtain a sequence length of 4, pruning all but the number of parameterized beams which is 2 at each time step. [Source](https://cjlovering.github.io/posts/beam-search/index.html) 
 
-![2023-09-13_17-35.png]
-(/blogs/img/decoding/2023-09-13_17-35.png)
+![2023-09-13_17-35.png](/blogs/img/decoding/beam.png)
 
 
 With the theoretical foundation in place, it is time to transition to the practical side of things. Let's start by implementing beam search in PyTorch. This code is directly derived from this [Repo](https://github.com/HiepThanh0510/text-generation-pytorch).
