@@ -6,11 +6,11 @@
     <description>Recent content in Tags on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 15 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 07 Oct 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Large Language Models</title>
       <link>https://R4j4n.github.io/blogs/tags/large-language-models/</link>
-      <pubDate>Fri, 15 Sep 2023 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 07 Oct 2023 00:00:00 +0000</pubDate>
       
       <guid>https://R4j4n.github.io/blogs/tags/large-language-models/</guid>
       <description></description>
@@ -19,7 +19,7 @@
     <item>
       <title>Natural Language Processing</title>
       <link>https://R4j4n.github.io/blogs/tags/natural-language-processing/</link>
-      <pubDate>Fri, 15 Sep 2023 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 07 Oct 2023 00:00:00 +0000</pubDate>
       
       <guid>https://R4j4n.github.io/blogs/tags/natural-language-processing/</guid>
       <description></description>
@@ -28,9 +28,18 @@
     <item>
       <title>PyTorch</title>
       <link>https://R4j4n.github.io/blogs/tags/pytorch/</link>
-      <pubDate>Fri, 15 Sep 2023 00:00:00 +0000</pubDate>
+      <pubDate>Sat, 07 Oct 2023 00:00:00 +0000</pubDate>
       
       <guid>https://R4j4n.github.io/blogs/tags/pytorch/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Transformers</title>
+      <link>https://R4j4n.github.io/blogs/tags/transformers/</link>
+      <pubDate>Sat, 07 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/tags/transformers/</guid>
       <description></description>
     </item>
     

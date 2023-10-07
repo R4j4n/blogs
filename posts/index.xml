@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Rajan Ghimire</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 15 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 07 Oct 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://R4j4n.github.io/blogs/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Transformers Optimization: Part 1 - KV Cache</title>
+      <link>https://R4j4n.github.io/blogs/posts/kv/</link>
+      <pubDate>Sat, 07 Oct 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://R4j4n.github.io/blogs/posts/kv/</guid>
+      <description>Understanding KV Cache, its working mechanism and comparison with vanilla architecture.</description>
+    </item>
+    
     <item>
       <title>Decoding Strategies in Language Models</title>
       <link>https://R4j4n.github.io/blogs/posts/text_decoding/</link>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Transformers Optimization: Part 1 - KV Cache | Rajan Ghimire</title>
+<meta name="keywords" content="Natural Language Processing, PyTorch, Large Language Models, Transformers">
+<meta name="description" content="Understanding KV Cache, its working mechanism and comparison with vanilla architecture.">
+<meta name="author" content="Rajan Ghimire">
+<link rel="canonical" href="https://R4j4n.github.io/blogs/posts/kv/">
+<link crossorigin="anonymous" href="/blogs/assets/css/stylesheet.54ccf0f50e0bb5bc885c6d275474800d82dde88cc22f647be5b4e4ca14d7176f.css" integrity="sha256-VMzw9Q4LtbyIXG0nVHSADYLd6IzCL2R75bTkyhTXF28=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/blogs/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js" integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG&#43;9vmJ0cTS&#43;ovo0FeA="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://R4j4n.github.io/blogs/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://R4j4n.github.io/blogs/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://R4j4n.github.io/blogs/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://R4j4n.github.io/blogs/apple-touch-icon.png">
+<link rel="mask-icon" href="https://R4j4n.github.io/blogs/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false }
+            ]
+        });
+    });
+</script>
+<meta property="og:title" content="Transformers Optimization: Part 1 - KV Cache" />
+<meta property="og:description" content="Understanding KV Cache, its working mechanism and comparison with vanilla architecture." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://R4j4n.github.io/blogs/posts/kv/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-10-07T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-10-07T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Transformers Optimization: Part 1 - KV Cache"/>
+<meta name="twitter:description" content="Understanding KV Cache, its working mechanism and comparison with vanilla architecture."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://R4j4n.github.io/blogs/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Transformers Optimization: Part 1 - KV Cache",
+      "item": "https://R4j4n.github.io/blogs/posts/kv/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Transformers Optimization: Part 1 - KV Cache",
+  "name": "Transformers Optimization: Part 1 - KV Cache",
+  "description": "Understanding KV Cache, its working mechanism and comparison with vanilla architecture.",
+  "keywords": [
+    "Natural Language Processing", "PyTorch", "Large Language Models", "Transformers"
+  ],
+  "articleBody": " Image by Martin Adams In this Transformers Optimization series, we will explore various optimization techniques for Transformer models. As a kickoff piece, we will dive deep into KV Cache, an inference optimization technique to significantly enhance the inference performance of large language models.\nWhat is KV Cache? A common technique for improving the performance of large model inferences is by using the KV cache of the last inference. Using the KV cache of the last inference improves inference performance and reduces end-to-end latency without affecting any accuracy.\nWhy KV Cache? While generating text (tokens) in autoregressive language models like GPT, all the previously generated tokens are fed into the network when generating a new token. Here, the hidden representation of the previously generated tokens needs to be recalculated each time a new token is generated. This causes a lot of computational waste. Let’s take an example:\nimport torch import torch from transformers import AutoTokenizer, AutoModelForCausalLM # torch.manual_seed(0) class Sampler: def __init__(self , model_name : str ='gpt2-medium') -\u003e None: self.device = 'cuda' if torch.cuda.is_available() else 'cpu' self.tokenizer = AutoTokenizer.from_pretrained(model_name) self.model = AutoModelForCausalLM.from_pretrained(model_name).to(\"cpu\").to(self.device) def encode(self, text): return self.tokenizer.encode(text, return_tensors='pt').to(self.device) def decode(self, ids): return self.tokenizer.decode(ids) def get_next_token_prob(self, input_ids: torch.Tensor): with torch.no_grad(): logits = self.model(input_ids=input_ids).logits logits = logits[0, -1, :] return logits class GreedySampler(Sampler): def __call__(self, prompt, max_new_tokens=10): predictions = [] result = prompt # generate until max_len for i in range(max_new_tokens): print(f\"step {i} input: {result}\") input_ids = self.encode(result) next_token_probs = self.get_next_token_prob(input_ids=input_ids) # choose the token with the highest probability id = torch.argmax(next_token_probs, dim=-1).item() # convert to token and add new token to text result += self.decode(id) predictions.append(next_token_probs[id].item()) return result gs = GreedySampler() gs(prompt=\"Large language models are recent advances in deep learning\", max_new_tokens=10) step 0 input: Large language models are recent advances in deep learning step 1 input: Large language models are recent advances in deep learning, step 2 input: Large language models are recent advances in deep learning, which step 3 input: Large language models are recent advances in deep learning, which uses step 4 input: Large language models are recent advances in deep learning, which uses deep step 5 input: Large language models are recent advances in deep learning, which uses deep neural step 6 input: Large language models are recent advances in deep learning, which uses deep neural networks step 7 input: Large language models are recent advances in deep learning, which uses deep neural networks to step 8 input: Large language models are recent advances in deep learning, which uses deep neural networks to learn step 9 input: Large language models are recent advances in deep learning, which uses deep neural networks to learn to Can you see the problem here? As the input tokens for each inference process become longer, it increases inference FLOPs (floating point operations). KV cache solves this problem by storing hidden representations of previously computed key-value pairs while generating a new token.\nLet’s take an example of step 4. Here, for generating the word deep, we feed only the uses word into the model and fetch the representation of Large language models are recent advances in deep learning, which from the cache.\nWorking of KV cache: Suppose we have n transformer layers in the architecture. Then each of the heads will maintain its own separate KV cache:\nclass SelfAttention(nn.Module): def __init__(self, args: ModelArgs): super().__init__() ... self.cache_k = torch.zeros((args.max_batch_size, args.max_seq_len, self.n_kv_heads, self.head_dim)) self.cache_v = torch.zeros((args.max_batch_size, args.max_seq_len, self.n_kv_heads, self.head_dim)) During the forward propagation, the cache will be prefilled and accessed as follows:\ndef forward( self, x: torch.Tensor, start_pos: int, freqs_complex: torch.Tensor ): ... # Input shape : (B, 1, Dim) # xk of shape (B, 1, H_KV, Head_Dim) # xv of shape (B, 1, H_KV, Head_Dim) # Replace the entry in the cache self.cache_k[:batch_size, start_pos : start_pos + seq_len] = xk self.cache_v[:batch_size, start_pos : start_pos + seq_len] = xv # (B, Seq_Len_KV, H_KV, Head_Dim) keys = self.cache_k[:batch_size, : start_pos + seq_len] # (B, Seq_Len_KV, H_KV, Head_Dim) values = self.cache_v[:batch_size, : start_pos + seq_len] source\nMathematically Given that the generated token is at $i^{th}$ the transformer layer. It is expressed as the following $t^{i} \\in \\mathbb{R} ^ {b \\times 1 \\times h}$. The calculations inside the $i^{th}$ transformer are divided into two parts: updating the KV cache and calculating the $t^{i+1}$.\n$$ \\begin{array}{l}x_{K}^{i} \\leftarrow \\operatorname{Concat}\\left(x_{K}^{i}, t^{i} \\cdot W_{K}^{i}\\right) \\\\ x_{V}^{i} \\leftarrow \\operatorname{Concat}\\left(x_{V}^{i}, t^{i} \\cdot W_{V}^{i}\\right)\\end{array} $$\nNow the remaining calculation: $$ \\begin{array}{c}t_{Q}^{i}=t_{i} \\cdot W_{Q}^{i} \\\\ t_{\\text {out }}^{i}=\\operatorname{softmax}\\left(\\frac{t_{Q}^{i} x_{K}^{i^{T}}}{\\sqrt{h}}\\right) \\cdot x_{V}^{i} \\cdot W_{O}^{i}+t^{i} \\\\ t^{i+1}=f_{\\text {activation}}\\left(t_{\\text {out }}^{i} \\cdot W_{1}\\right) \\cdot W_{2}+t_{\\text {out }}^{i}\\end{array} $$\nTo get a better understanding of the steps above, let’s have a look at a visual representation of KV Cache.\nConsider a transformer architecture with 12 attention heads and KV Cache. The following figure represents the transformer state while generating $9th$ token of the input sequence.\nKV cahce working. FLOPs comparison of vanilla Transformer and Transformer with KV Cache. FLOPs, floating point operations, represent the number of floating-point number operations, measuring the amount of computation.\nCalculating FLOPs for Matrix Multiplication:\nLet $A \\in R^{1 \\times n}, B \\in R^{n \\times 1}$, to compute $AB$ we need $n$ multiplication operations and $n$ addition operations. Then total FLOPs is $2n$. Also, if $A \\in R^{m \\times n}, B \\in R^{n \\times p}$ then, to compute $AB$ the number of floating-point arithmetic required is $2mnp$.\nBasic Notations:\n$b$ = Batch Size $s$ = Sequence Length $h$ = Hidden Dimension $x$ = input $num\\_head$ = Total number of heads $head\\_dim$ = Hidden Dimension of each head. In self-attention block :\nStep 1:\n$$ Q = x W_q \\ K = x W_k \\ V = x W_v $$\nInput $x$ of shape = $(b,s,h)$. Shape of weights = $(h,h)$\n$$ (b,s,h) (h,h) \\rightarrow (b,s,h) $$ Total Computations: $2bsh^2$. For Q, K, V its $3 \\times 2bsh^2 \\rightarrow 6bsh^2$\nStep 2: For attention calculation :\n$$ x_{\\text {out }}=\\operatorname{softmax}\\left(\\frac{Q K^{T}}{\\sqrt{h}}\\right) \\cdot V \\cdot W_{o}+x $$\nStep 2.1: For $QK^T$\n$$ (b,num\\_head,s,head\\_dim) \\times (b,num\\_head,head\\_dim, s) \\rightarrow (b,num\\_headk,s,s) $$ So, the total computations is $2bs^2h$.\nStep 2.2 For $\\operatorname{softmax}\\left(\\frac{Q K^{T}}{\\sqrt{h}}\\right) \\cdot V$\n$$ (b,num\\_head,s,s) \\times (b,num\\_head,s,head\\_dim) \\rightarrow (b,num\\_head,s,head\\_dim) $$ The total claculation is $2bs^2h$.\n2.3 For linear layer after attention: (for $W_o$) $$ (b,s,h) (h,h) \\rightarrow (b,s,h) $$ Total Computations: $2bh^2$.\nStep 3: For MLP block $$ x=f_{\\text {activation }}\\left(x_{\\text {out }} W_{1}\\right) W_{2}+x_{\\text {out }} $$\nStep 3.1: For the first linear layer, the input and output shapes of matrix multiplication are $$ (b, s, h) \\times(h, 4 h) \\rightarrow(b, s, 4 h) $$ Total Computations: $8bsh^2$. Step 3.2: For the second linear layer, the input and output shapes of matrix multiplication are $$ [b, s, 4 h] \\times[4 h, h] \\rightarrow[b, s, h] $$ Total Computations: $8bsh^2$.\nStep 4: For hidden layer to Vocabulary mapping layer\n$$ (b, s, h) \\times(h, V) \\rightarrow(b, s, V) $$ Total Computations : $2bshV$.\nTherefore, total amount of computation for transformer is : $\\left(24 b s h^{2}+4 b s^{2} h\\right)+2 b s h V$\nIf we have $n$ transformer layers then, total number of computation will be $$ n \\times \\left(24 b s h^{2}+4 b s^{2} h\\right)+2 b s h V $$\nFlops in Transformers with KV cache As we know, for each iteration, we will be passing a single token, so the input will be of shape: $(b,1,h)$. Step 1: $$ Q = x W_q \\ K = x W_k \\ V = x W_v $$ Input $x$ of shape = $(b,s,h)$. Shape of weights = $(h,h)$\n$$ (b,1,h) (h,h) \\rightarrow (b,1,h) $$ Total calculations: $2bsh^2$. For Q, K, V its $3 \\times 2bsh^2 \\rightarrow 6bh^2$\nStep 2: For attention calculation.\n$$ x_{\\text {out }}=\\operatorname{softmax}\\left(\\frac{Q K^{T}}{\\sqrt{h}}\\right) \\cdot V \\cdot W_{o}+x $$\nStep 2.1: For $QK^T$\n$$ (b,num\\_head,1,head\\_dim) \\times (b,num\\_head,head\\_dim, KV\\_Length + s) \\rightarrow (b,num\\_head,1,KV\\_Length + 1) $$ So, the total computations is $2bs(KV\\_Length + 1)h$.\nStep 2.2 For $\\operatorname{softmax}\\left(\\frac{Q K^{T}}{\\sqrt{h}}\\right) \\cdot V$\n$$ (b,num\\_head,1,KV\\_Length + 1) \\times (b,num\\_head,KV\\_Length + 1,head\\_dim) \\rightarrow (b,num\\_head,1,head\\_dim) $$ The total claculation is $2bs(KV\\_Length + 1)h$.\n2.3 For linear layer after attention: (for $W_o$) $$ (b,1,h) (h,h) \\rightarrow (b,1,h) $$ Total calculations: $2bh^2$.\nStep 3: For MLP block $$ x=f_{\\text {gelu }}\\left(x_{\\text {out }} W_{1}\\right) W_{2}+x_{\\text {out }} $$\n3.1 For the first linear layer, the input and output shapes of matrix multiplication are $$ (b, 1, h) \\times(h, 4 h) \\rightarrow(b, 1, 4 h) $$ Total Computations: $8bh^2$. 3.2 For the second linear layer, the input and output shapes of matrix multiplication are $$ [b, 1, 4 h] \\times[4 h, h] \\rightarrow[b, 1, h] $$ Total Computations: $8bh^2$.\nStep 4: For hidden layer to Vocabulary mapping layer\n$$ (b, 1, h) \\times(h, V) \\rightarrow(b, 1, V) $$ Total Computations : $2bhV$.\nTherefore, the total amount of computation for the KV-transformer is: $24 b h^{2}+4 b h+4 b(KV\\_Length) + 2bhV h$\nIf we have $n$ transformer layers then, total number of computation will be $$ n \\times (24 b h^{2}+4 b h+4 b(KV\\_Length)) + 2bhV h $$\nConclusion If we have a sufficiently long sequence length $s$, then floating point operations in the KV transformer will be significantly less than those in the vanilla one.\nIf : $$ F_{\\text{Vanilla}}(n, b, s, h, V) = n \\times (24 b s h^{2}+4 b s^{2} h) + 2 b s h V \\\\ F_{\\text{KV}}(n, b, h, KV\\_Length, V) = n \\times (24 b h^{2}+4 b h+4 b KV\\_Length) + 2 b h V \\ $$\nThen :\n$$ \\lim_{{s \\to \\infty}} F_{\\text{Vanilla}}(n, b, s, h, V) \u003e \\lim_{{s \\to \\infty}} F_{\\text{KV}}(n, b, h, KV\\_Length, V) $$\nReferences https://browse.arxiv.org/pdf/2211.05102.pdf https://kipp.ly/transformer-inference-arithmetic/ https://www.dipkumar.dev/becoming-the-unbeatable/posts/gpt-kvcache/ https://www.youtube.com/watch?v=80bIUggRJf4 https://www.youtube.com/watch?v=80bIUggRJf4 https://www.youtube.com/watch?v=IGu7ivuy1Ag https://zhuanlan.zhihu.com/p/630832593 https://zhuanlan.zhihu.com/p/633653755 https://zhuanlan.zhihu.com/p/624740065 ",
+  "wordCount" : "1586",
+  "inLanguage": "en",
+  "datePublished": "2023-10-07T00:00:00Z",
+  "dateModified": "2023-10-07T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "Rajan Ghimire"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://R4j4n.github.io/blogs/posts/kv/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Rajan Ghimire",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://R4j4n.github.io/blogs/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://R4j4n.github.io/blogs/" accesskey="h" title="Rajan Ghimire (Alt + H)">Rajan Ghimire</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://R4j4n.github.io/blogs/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://R4j4n.github.io/blogs/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://R4j4n.github.io/blogs/">Home</a>&nbsp;»&nbsp;<a href="https://R4j4n.github.io/blogs/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Transformers Optimization: Part 1 - KV Cache
+    </h1>
+    <div class="post-description">
+      Understanding KV Cache, its working mechanism and comparison with vanilla architecture.
+    </div>
+    <div class="post-meta"><span title='2023-10-07 00:00:00 +0000 UTC'>October 7, 2023</span>&nbsp;·&nbsp;8 min&nbsp;·&nbsp;Rajan Ghimire
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#what-is-kv-cache" aria-label="What is KV Cache?">What is KV Cache?</a></li>
+                <li>
+                    <a href="#why-kv-cache" aria-label="Why KV Cache?">Why KV Cache?</a></li>
+                <li>
+                    <a href="#flops-comparison-of-vanilla-transformer-and-transformer-with-kv-cache" aria-label="FLOPs comparison of vanilla Transformer and Transformer with KV Cache.">FLOPs comparison of vanilla Transformer and Transformer with KV Cache.</a></li>
+                <li>
+                    <a href="#flops-in-transformers-with-kv-cache" aria-label="Flops in Transformers with KV cache">Flops in Transformers with KV cache</a></li>
+                <li>
+                    <a href="#conclusion" aria-label="Conclusion">Conclusion</a></li>
+                <li>
+                    <a href="#references" aria-label="References">References</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><table>
+<thead>
+<tr>
+<th style="text-align:center"><img loading="lazy" src="https://images.unsplash.com/photo-1539186607619-df476afe6ff1?ixlib=rb-4.0.3&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&amp;auto=format&amp;fit=crop&amp;w=2070&amp;q=80" alt="GLTS3gFAqRajBqSNzZKq&amp;ndash;1&amp;ndash;8x95p.jpg"  />
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>Image by <a href="https://unsplash.com/photos/a_PDPUPuNZ8">Martin Adams</a></em></td>
+</tr>
+</tbody>
+</table>
+<p>In this Transformers Optimization series, we will explore various optimization techniques for Transformer models. As a kickoff piece, we will dive deep into KV Cache, an inference optimization technique to significantly enhance the inference performance of large language models.</p>
+<h3 id="what-is-kv-cache">What is KV Cache?<a hidden class="anchor" aria-hidden="true" href="#what-is-kv-cache">#</a></h3>
+<p>A common technique for improving the performance of large model inferences is by using the KV cache of the last inference. Using the KV cache of the last inference improves inference performance and reduces end-to-end latency without affecting any accuracy.</p>
+<h3 id="why-kv-cache">Why KV Cache?<a hidden class="anchor" aria-hidden="true" href="#why-kv-cache">#</a></h3>
+<p>While generating text (tokens) in autoregressive language models like GPT, all the previously generated tokens are fed into the network when generating a new token. Here, the hidden representation of the previously generated tokens needs to be recalculated each time a new token is generated. This causes a lot of computational waste.
+Let&rsquo;s take an example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> transformers <span style="color:#f92672">import</span> AutoTokenizer, AutoModelForCausalLM
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># torch.manual_seed(0)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Sampler</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self , model_name : str <span style="color:#f92672">=</span><span style="color:#e6db74">&#39;gpt2-medium&#39;</span>) <span style="color:#f92672">-&gt;</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>device <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;cuda&#39;</span> <span style="color:#66d9ef">if</span> torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>is_available() <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#39;cpu&#39;</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>tokenizer <span style="color:#f92672">=</span> AutoTokenizer<span style="color:#f92672">.</span>from_pretrained(model_name)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model <span style="color:#f92672">=</span> AutoModelForCausalLM<span style="color:#f92672">.</span>from_pretrained(model_name)<span style="color:#f92672">.</span>to(<span style="color:#e6db74">&#34;cpu&#34;</span>)<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encode</span>(self, text):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>tokenizer<span style="color:#f92672">.</span>encode(text, return_tensors<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;pt&#39;</span>)<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>device)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decode</span>(self, ids):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>tokenizer<span style="color:#f92672">.</span>decode(ids)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_next_token_prob</span>(self, input_ids: torch<span style="color:#f92672">.</span>Tensor):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">with</span> torch<span style="color:#f92672">.</span>no_grad():
+</span></span><span style="display:flex;"><span>            logits <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model(input_ids<span style="color:#f92672">=</span>input_ids)<span style="color:#f92672">.</span>logits
+</span></span><span style="display:flex;"><span>        logits <span style="color:#f92672">=</span> logits[<span style="color:#ae81ff">0</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, :]
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> logits
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GreedySampler</span>(Sampler):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __call__(self, prompt, max_new_tokens<span style="color:#f92672">=</span><span style="color:#ae81ff">10</span>):
+</span></span><span style="display:flex;"><span>        predictions <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>        result <span style="color:#f92672">=</span> prompt
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># generate until max_len</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(max_new_tokens):
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;step </span><span style="color:#e6db74">{</span>i<span style="color:#e6db74">}</span><span style="color:#e6db74"> input: </span><span style="color:#e6db74">{</span>result<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>            input_ids <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>encode(result)
+</span></span><span style="display:flex;"><span>            next_token_probs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_next_token_prob(input_ids<span style="color:#f92672">=</span>input_ids)
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># choose the token with the highest probability</span>
+</span></span><span style="display:flex;"><span>            id <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>argmax(next_token_probs, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>item()
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># convert to token and add new token to text</span>
+</span></span><span style="display:flex;"><span>            result <span style="color:#f92672">+=</span> self<span style="color:#f92672">.</span>decode(id)
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            predictions<span style="color:#f92672">.</span>append(next_token_probs[id]<span style="color:#f92672">.</span>item())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> result
+</span></span></code></pre></div><pre tabindex="0"><code>gs = GreedySampler()
+gs(prompt=&#34;Large language models are recent advances in deep learning&#34;, max_new_tokens=10)
+
+step 0 input: Large language models are recent advances in deep learning
+step 1 input: Large language models are recent advances in deep learning,
+step 2 input: Large language models are recent advances in deep learning, which
+step 3 input: Large language models are recent advances in deep learning, which uses
+step 4 input: Large language models are recent advances in deep learning, which uses deep
+step 5 input: Large language models are recent advances in deep learning, which uses deep neural
+step 6 input: Large language models are recent advances in deep learning, which uses deep neural networks
+step 7 input: Large language models are recent advances in deep learning, which uses deep neural networks to
+step 8 input: Large language models are recent advances in deep learning, which uses deep neural networks to learn
+step 9 input: Large language models are recent advances in deep learning, which uses deep neural networks to learn to
+</code></pre><p>Can you see the problem here? As the input tokens for each inference process become longer, it increases inference FLOPs (floating point operations). KV cache solves this problem by storing hidden representations of previously computed key-value pairs while generating a new token.</p>
+<p>Let&rsquo;s take an example of step 4. Here, for generating the word <em><strong>deep</strong></em>, we feed only the <em><strong>uses</strong></em> word into the model and fetch the representation of <em><strong>Large language models are recent advances in deep learning, which</strong></em> from the cache.</p>
+<p>Working of KV cache:
+Suppose we have <code>n</code> transformer layers in the architecture. Then each of the heads will maintain its own separate KV cache:</p>
+<pre tabindex="0"><code>class SelfAttention(nn.Module):
+    def __init__(self, args: ModelArgs):
+        super().__init__()
+
+        ... 
+
+        self.cache_k = torch.zeros((args.max_batch_size, args.max_seq_len, self.n_kv_heads, self.head_dim))
+        self.cache_v = torch.zeros((args.max_batch_size, args.max_seq_len, self.n_kv_heads, self.head_dim))
+</code></pre><p>During the forward propagation, the cache will be prefilled and accessed as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(
+</span></span><span style="display:flex;"><span>        self,
+</span></span><span style="display:flex;"><span>        x: torch<span style="color:#f92672">.</span>Tensor,
+</span></span><span style="display:flex;"><span>        start_pos: int,
+</span></span><span style="display:flex;"><span>        freqs_complex: torch<span style="color:#f92672">.</span>Tensor
+</span></span><span style="display:flex;"><span>    ):
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">...</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Input shape : (B, 1, Dim)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># xk of shape (B, 1, H_KV, Head_Dim)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># xv of shape (B, 1, H_KV, Head_Dim)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Replace the entry in the cache</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>cache_k[:batch_size, start_pos : start_pos <span style="color:#f92672">+</span> seq_len] <span style="color:#f92672">=</span> xk
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>cache_v[:batch_size, start_pos : start_pos <span style="color:#f92672">+</span> seq_len] <span style="color:#f92672">=</span> xv
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># (B, Seq_Len_KV, H_KV, Head_Dim)</span>
+</span></span><span style="display:flex;"><span>        keys <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>cache_k[:batch_size, : start_pos <span style="color:#f92672">+</span> seq_len]
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># (B, Seq_Len_KV, H_KV, Head_Dim)</span>
+</span></span><span style="display:flex;"><span>        values <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>cache_v[:batch_size, : start_pos <span style="color:#f92672">+</span> seq_len]
+</span></span></code></pre></div><p><a href="https://github.com/hkproj/pytorch-llama">source</a></p>
+<p><strong>Mathematically</strong>
+Given that the generated token is at $i^{th}$ the transformer layer. It is expressed as the following $t^{i} \in \mathbb{R} ^ {b \times 1 \times h}$. The calculations inside the $i^{th}$ transformer are divided into two parts: updating the KV cache and calculating the
+$t^{i+1}$.</p>
+<p>$$
+\begin{array}{l}x_{K}^{i} \leftarrow \operatorname{Concat}\left(x_{K}^{i}, t^{i} \cdot W_{K}^{i}\right) \\
+x_{V}^{i} \leftarrow \operatorname{Concat}\left(x_{V}^{i}, t^{i} \cdot W_{V}^{i}\right)\end{array}
+$$</p>
+<p>Now the remaining calculation:
+$$
+\begin{array}{c}t_{Q}^{i}=t_{i} \cdot W_{Q}^{i} \\ t_{\text {out }}^{i}=\operatorname{softmax}\left(\frac{t_{Q}^{i} x_{K}^{i^{T}}}{\sqrt{h}}\right) \cdot x_{V}^{i} \cdot W_{O}^{i}+t^{i} \\ t^{i+1}=f_{\text {activation}}\left(t_{\text {out }}^{i} \cdot W_{1}\right) \cdot W_{2}+t_{\text {out }}^{i}\end{array}
+$$</p>
+<p>To get a better understanding of the steps above, let&rsquo;s have a look at a visual representation of KV Cache.</p>
+<p>Consider a transformer architecture with 12 attention heads and KV Cache. The following figure represents the transformer state while generating $9th$ token of the input sequence.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img loading="lazy" src="/blogs/img/kv/kv.png" alt="GLTS3gFAqRajBqSNzZKq&amp;ndash;1&amp;ndash;8x95p.jpg"  />
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><em>KV cahce working.</em></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="flops-comparison-of-vanilla-transformer-and-transformer-with-kv-cache">FLOPs comparison of vanilla Transformer and Transformer with KV Cache.<a hidden class="anchor" aria-hidden="true" href="#flops-comparison-of-vanilla-transformer-and-transformer-with-kv-cache">#</a></h3>
+<p><em>FLOPs, floating point operations, represent the number of floating-point number operations, measuring the amount of computation.</em></p>
+<p><strong>Calculating FLOPs for Matrix Multiplication:</strong></p>
+<p><em>Let $A \in R^{1 \times n}, B \in R^{n \times 1}$, to compute $AB$ we need $n$ multiplication operations and $n$ addition operations. Then total FLOPs is $2n$. Also, if $A \in R^{m \times n}, B \in R^{n \times p}$ then, to compute $AB$ the number of floating-point arithmetic required is $2mnp$.</em></p>
+<p><strong>Basic Notations:</strong></p>
+<p>$b$ = Batch Size <!-- raw HTML omitted --></p>
+<p>$s$ = Sequence Length <!-- raw HTML omitted --></p>
+<p>$h$ = Hidden Dimension <!-- raw HTML omitted --></p>
+<p>$x$ = input <!-- raw HTML omitted --></p>
+<p>$num\_head$ = Total number of heads <!-- raw HTML omitted --></p>
+<p>$head\_dim$ = Hidden Dimension of each head. <!-- raw HTML omitted --></p>
+<p><strong>In self-attention block :</strong><!-- raw HTML omitted --></p>
+<p><strong>Step 1:</strong></p>
+<p>$$
+Q = x W_q \
+K = x W_k \
+V = x W_v
+$$</p>
+<p>Input $x$ of shape = $(b,s,h)$.<!-- raw HTML omitted -->
+Shape of weights = $(h,h)$</p>
+<p>$$
+(b,s,h) (h,h) \rightarrow (b,s,h)
+$$
+Total Computations: $2bsh^2$. For Q, K, V its $3 \times 2bsh^2 \rightarrow 6bsh^2$</p>
+<p><strong>Step 2: For attention calculation :</strong></p>
+<p>$$
+x_{\text {out }}=\operatorname{softmax}\left(\frac{Q K^{T}}{\sqrt{h}}\right) \cdot V \cdot W_{o}+x
+$$</p>
+<p><strong>Step 2.1: For $QK^T$</strong></p>
+<p>$$
+(b,num\_head,s,head\_dim) \times (b,num\_head,head\_dim, s)  \rightarrow (b,num\_headk,s,s)
+$$
+So, the total computations is $2bs^2h$.</p>
+<p><strong>Step 2.2 For $\operatorname{softmax}\left(\frac{Q K^{T}}{\sqrt{h}}\right) \cdot V$</strong></p>
+<p>$$
+(b,num\_head,s,s) \times  (b,num\_head,s,head\_dim) \rightarrow (b,num\_head,s,head\_dim)
+$$
+The total claculation is $2bs^2h$.</p>
+<p><strong>2.3 For linear layer after attention: (for $W_o$)</strong>
+$$
+(b,s,h) (h,h) \rightarrow (b,s,h)
+$$
+Total Computations: $2bh^2$.</p>
+<p><strong>Step 3: For MLP block</strong>
+$$
+x=f_{\text {activation }}\left(x_{\text {out }} W_{1}\right) W_{2}+x_{\text {out }}
+$$</p>
+<p><strong>Step 3.1: For the first linear layer, the input and output shapes of matrix multiplication are</strong>
+$$
+(b, s, h) \times(h, 4 h) \rightarrow(b, s, 4 h)
+$$
+Total Computations: $8bsh^2$.
+<strong>Step 3.2: For the second linear layer, the input and output shapes of matrix multiplication are</strong>
+$$
+[b, s, 4 h] \times[4 h, h] \rightarrow[b, s, h]
+$$
+Total Computations: $8bsh^2$.</p>
+<p><strong>Step 4: For hidden layer to Vocabulary mapping layer</strong></p>
+<p>$$
+(b, s, h) \times(h, V) \rightarrow(b, s, V)
+$$
+Total Computations : $2bshV$.</p>
+<p><strong>Therefore, total amount of computation for transformer is : $\left(24 b s h^{2}+4 b s^{2} h\right)+2 b s h V$</strong></p>
+<p><strong>If we have $n$ transformer layers then, total number of  computation will be</strong>
+$$
+n \times \left(24 b s h^{2}+4 b s^{2} h\right)+2 b s h V
+$$</p>
+<h3 id="flops-in-transformers-with-kv-cache">Flops in Transformers with KV cache<a hidden class="anchor" aria-hidden="true" href="#flops-in-transformers-with-kv-cache">#</a></h3>
+<p>As we know, for each iteration, we will be passing a single token, so the input will be of shape: $(b,1,h)$.
+<strong>Step 1:</strong>
+$$
+Q = x W_q \
+K = x W_k \
+V = x W_v
+$$
+Input $x$ of shape = $(b,s,h)$.<!-- raw HTML omitted -->
+Shape of weights = $(h,h)$</p>
+<p>$$
+(b,1,h) (h,h) \rightarrow (b,1,h)
+$$
+Total calculations: $2bsh^2$. For Q, K, V its $3 \times 2bsh^2 \rightarrow 6bh^2$</p>
+<p><strong>Step 2: For attention calculation.</strong></p>
+<p>$$
+x_{\text {out }}=\operatorname{softmax}\left(\frac{Q K^{T}}{\sqrt{h}}\right) \cdot V \cdot W_{o}+x
+$$</p>
+<p><strong>Step 2.1: For $QK^T$</strong></p>
+<p>$$
+(b,num\_head,1,head\_dim) \times (b,num\_head,head\_dim, KV\_Length + s)  \rightarrow (b,num\_head,1,KV\_Length + 1)
+$$
+So, the total computations is $2bs(KV\_Length + 1)h$.</p>
+<p><strong>Step 2.2 For $\operatorname{softmax}\left(\frac{Q K^{T}}{\sqrt{h}}\right) \cdot V$</strong></p>
+<p>$$
+(b,num\_head,1,KV\_Length + 1) \times  (b,num\_head,KV\_Length + 1,head\_dim) \rightarrow (b,num\_head,1,head\_dim)
+$$
+The total claculation is $2bs(KV\_Length + 1)h$.</p>
+<p><strong>2.3 For linear layer after attention: (for $W_o$)</strong>
+$$
+(b,1,h) (h,h) \rightarrow (b,1,h)
+$$
+Total calculations: $2bh^2$.</p>
+<p><strong>Step 3: For MLP block</strong>
+$$
+x=f_{\text {gelu }}\left(x_{\text {out }} W_{1}\right) W_{2}+x_{\text {out }}
+$$</p>
+<p><strong>3.1 For the first linear layer, the input and output shapes of matrix multiplication are</strong>
+$$
+(b, 1, h) \times(h, 4 h) \rightarrow(b, 1, 4 h)
+$$
+Total Computations: $8bh^2$.
+<strong>3.2 For the second linear layer, the input and output shapes of matrix multiplication are</strong>
+$$
+[b, 1, 4 h] \times[4 h, h] \rightarrow[b, 1, h]
+$$
+Total Computations: $8bh^2$.</p>
+<p><strong>Step 4: For hidden layer to Vocabulary mapping layer</strong></p>
+<p>$$
+(b, 1, h) \times(h, V) \rightarrow(b, 1, V)
+$$
+Total Computations : $2bhV$.</p>
+<p><strong>Therefore, the total amount of computation for the KV-transformer is: $24 b h^{2}+4 b h+4 b(KV\_Length) + 2bhV h$</strong></p>
+<p>If we have $n$ transformer layers then, total number of  computation will be
+$$
+n \times (24 b h^{2}+4 b h+4 b(KV\_Length)) + 2bhV h
+$$</p>
+<h3 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h3>
+<p>If we have a sufficiently long sequence length $s$, then floating point operations in the KV transformer will be significantly less than those in the vanilla one.</p>
+<p>If :
+$$
+F_{\text{Vanilla}}(n, b, s, h, V) = n \times (24 b s h^{2}+4 b s^{2} h) + 2 b s h V \\
+F_{\text{KV}}(n, b, h, KV\_Length, V) = n \times (24 b h^{2}+4 b h+4 b KV\_Length) + 2 b h V \
+$$</p>
+<p>Then :</p>
+<p>$$
+\lim_{{s \to \infty}} F_{\text{Vanilla}}(n, b, s, h, V) &gt; \lim_{{s \to \infty}} F_{\text{KV}}(n, b, h, KV\_Length, V)
+$$</p>
+<h3 id="references">References<a hidden class="anchor" aria-hidden="true" href="#references">#</a></h3>
+<ul>
+<li><a href="https://browse.arxiv.org/pdf/2211.05102.pdf">https://browse.arxiv.org/pdf/2211.05102.pdf</a></li>
+<li><a href="https://kipp.ly/transformer-inference-arithmetic/">https://kipp.ly/transformer-inference-arithmetic/</a></li>
+<li><a href="https://www.dipkumar.dev/becoming-the-unbeatable/posts/gpt-kvcache/">https://www.dipkumar.dev/becoming-the-unbeatable/posts/gpt-kvcache/</a></li>
+<li><a href="https://www.youtube.com/watch?v=80bIUggRJf4">https://www.youtube.com/watch?v=80bIUggRJf4</a></li>
+<li><a href="https://www.youtube.com/watch?v=80bIUggRJf4">https://www.youtube.com/watch?v=80bIUggRJf4</a></li>
+<li><a href="https://www.youtube.com/watch?v=IGu7ivuy1Ag">https://www.youtube.com/watch?v=IGu7ivuy1Ag</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/630832593">https://zhuanlan.zhihu.com/p/630832593</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/633653755">https://zhuanlan.zhihu.com/p/633653755</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/624740065">https://zhuanlan.zhihu.com/p/624740065</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://R4j4n.github.io/blogs/tags/natural-language-processing/">Natural Language Processing</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/pytorch/">PyTorch</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/large-language-models/">Large Language Models</a></li>
+      <li><a href="https://R4j4n.github.io/blogs/tags/transformers/">Transformers</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://R4j4n.github.io/blogs/posts/text_decoding/">
+    <span class="title">Next »</span>
+    <br>
+    <span>Decoding Strategies in Language Models</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2023 <a href="https://R4j4n.github.io/blogs/">Rajan Ghimire</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
