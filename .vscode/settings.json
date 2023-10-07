@@ -19,6 +19,11 @@
             "language": "markdown",
             "scheme": "file",
             "pattern": "content/posts/text_decoding.md"
+        },
+        {
+            "language": "markdown",
+            "scheme": "file",
+            "pattern": "content/posts/KV.md"
         }
     ]
 }
